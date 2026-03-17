@@ -14,8 +14,10 @@ import {
 } from "@phosphor-icons/react";
 import { useDispatch, useSelector } from "react-redux";
 import { updateForm, resetForm } from "../../../../redux/formSlice";
+import { submitCpdaClaimForm } from "../../services/hrService";
 import "./CPDA_ClaimForm.css";
 
+/* eslint-disable jsx-a11y/label-has-associated-control */
 function CPDA_ClaimForm() {
   const formData = useSelector((state) => state.form);
   const dispatch = useDispatch();
@@ -27,20 +29,9 @@ function CPDA_ClaimForm() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const authToken = localStorage.getItem("authToken");
 
     try {
-      const response = await fetch(
-        "http://127.0.0.1:8000/hr2/api/submit_cpda_reimbursement_form/",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Token ${authToken}`,
-          },
-          body: JSON.stringify(formData),
-        },
-      );
+      const response = await submitCpdaClaimForm(formData);
 
       if (response.ok) {
         const result = await response.json();

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import InboxTable from "../../components/tables/InboxTable";
 import { get_cpda_claim_inbox } from "../../../../routes/hr/index"; // Ensure this is the correct import path
 import LoadingComponent from "../../components/Loading"; // Ensure this is the correct import path
+import { fetchHrCollection } from "../../services/hrService";
 
 function CPDA_ClaimInbox() {
   const [inboxData, setInboxData] = useState([]); // Correct useState syntax
@@ -10,20 +11,13 @@ function CPDA_ClaimInbox() {
   useEffect(() => {
     const fetchCPDAClaimInbox = async () => {
       console.log("Fetching CPDA Claim inbox...");
-      const token = localStorage.getItem("authToken");
-      if (!token) {
-        console.error("No authentication token found!");
-        setLoading(false);
-        return;
-      }
       try {
-        const response = await fetch(get_cpda_claim_inbox, {
-          headers: { Authorization: `Token ${token}` },
-        });
-        const data = await response.json();
-        setInboxData(data.cpda_claim_inbox); // Set fetched data
+        const data = await fetchHrCollection(
+          get_cpda_claim_inbox,
+          "cpda_claim_inbox",
+        );
+        setInboxData(data); // Set fetched data
         setLoading(false); // Set loading to false once data is fetched
-        console.log(data);
       } catch (error) {
         console.error("Failed to fetch CPDA Claim inbox:", error);
         setLoading(false); // Set loading to false if there’s an error

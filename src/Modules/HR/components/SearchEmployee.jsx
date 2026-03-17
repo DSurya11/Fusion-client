@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Select } from "@mantine/core";
 import PropTypes from "prop-types";
-import { search_employees } from "../../../routes/hr/index";
+import { searchEmployees } from "../services/hrService";
 
 function SearchEmployee({ onEmployeeSelect, initialSearch }) {
   const [searchResults, setSearchResults] = useState([]);
@@ -11,7 +11,6 @@ function SearchEmployee({ onEmployeeSelect, initialSearch }) {
   const [searchText, setSearchText] = useState(initialSearch || "");
 
   const hasAutoSearched = useRef(false);
-  const token = localStorage.getItem("authToken");
 
   const fetchEmployees = async (text) => {
     if (text.length < 3) {
@@ -19,6 +18,7 @@ function SearchEmployee({ onEmployeeSelect, initialSearch }) {
       return;
     }
 
+    const token = localStorage.getItem("authToken");
     if (!token) {
       setError("Authentication token is missing.");
       return;
@@ -28,11 +28,7 @@ function SearchEmployee({ onEmployeeSelect, initialSearch }) {
     setError(null);
 
     try {
-      const response = await fetch(`${search_employees}?search_text=${text}`, {
-        headers: {
-          Authorization: `Token ${token}`,
-        },
-      });
+      const response = await searchEmployees(text);
 
       if (!response.ok) {
         throw new Error(`Failed to fetch employees: ${response.statusText}`);

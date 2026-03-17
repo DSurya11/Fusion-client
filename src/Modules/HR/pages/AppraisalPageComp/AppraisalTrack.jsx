@@ -1,12 +1,8 @@
 import React, { useEffect, useState } from "react";
-import InboxTable from "../../components/tables/InboxTable";
 import { useParams } from "react-router-dom";
-import {
-  get_appraisal_inbox,
-  get_form_track,
-} from "../../../../routes/hr/index"; // Ensure this is the correct import path
 import LoadingComponent from "../../components/Loading"; // Ensure this is the correct import path
 import TrackTable from "../../components/tables/TrackTable";
+import { fetchHrTrackHistory } from "../../services/hrService";
 
 function AppraisalTrack() {
   const { id } = useParams();
@@ -25,27 +21,17 @@ function AppraisalTrack() {
   useEffect(() => {
     const fetchAppraisalTrack = async () => {
       console.log("Fetching Appraisal Track...");
-      const token = localStorage.getItem("authToken");
-      if (!token) {
-        console.error("No authentication token found!");
-        setLoading(false);
-        return;
-      }
       try {
-        const response = await fetch(`${get_form_track(id)}`, {
-          headers: { Authorization: `Token ${token}` },
-        });
-        const data = await response.json();
-        setTrackData(data.file_history); // Set fetched data
+        const data = await fetchHrTrackHistory(id);
+        setTrackData(data); // Set fetched data
         setLoading(false); // Set loading to false once data is fetched
-        console.log(data);
       } catch (error) {
         console.error("Failed to fetch Appraisal Track:", error);
         setLoading(false); // Set loading to false if there’s an error
       }
     };
     fetchAppraisalTrack(); // Ensure function is called
-  }, []); // Adding empty dependency array to run only once
+  }, [id]);
 
   if (loading) {
     return <LoadingComponent />;
