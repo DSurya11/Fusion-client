@@ -31,6 +31,7 @@ function Header({ opened, toggleSidebar }) {
   const username = useSelector((state) => state.user.username);
   const roles = useSelector((state) => state.user.roles);
   const role = useSelector((state) => state.user.role);
+  const safeRoles = Array.isArray(roles) ? roles : [];
   const navigate = useNavigate();
   const dispatch = useDispatch();
   // const queryclient = useQueryClient();
@@ -65,7 +66,7 @@ function Header({ opened, toggleSidebar }) {
       console.log(response.data.message);
       dispatch(setRole(newRole));
       dispatch(setCurrentAccessibleModules());
-      navigate('/dashboard')
+      navigate("/dashboard");
     } catch (error) {
       console.error("Error updating last selected role:", error.response.data);
     }
@@ -136,7 +137,7 @@ function Header({ opened, toggleSidebar }) {
             }}
             variant="default"
             rightSection={<UserSwitch size="24px" />}
-            data={roles}
+            data={safeRoles}
             value={role}
             onChange={handleRoleChange}
             placeholder="Role"
@@ -176,6 +177,19 @@ function Header({ opened, toggleSidebar }) {
                       ? `${username.slice(0, 18)}...`
                       : username}
                   </Text>
+
+                  {safeRoles.length > 0 && (
+                    <Stack gap={2}>
+                      <Text size="xs" c="dimmed" fw={600}>
+                        Assigned Roles
+                      </Text>
+                      {safeRoles.map((assignedRole) => (
+                        <Text size="xs" key={assignedRole}>
+                          {username} {"->"} {assignedRole}
+                        </Text>
+                      ))}
+                    </Stack>
+                  )}
 
                   <Flex gap="xs" direction={{ xxs: "column", xs: "row" }}>
                     <Button

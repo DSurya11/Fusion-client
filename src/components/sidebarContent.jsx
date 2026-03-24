@@ -132,7 +132,7 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
       label: "Human Resource",
       id: "hr",
       icon: <HumanResourceIcon size={18} />,
-      url: "/",
+      url: "/hr",
     },
     {
       label: "Examination",
@@ -140,7 +140,7 @@ function SidebarContent({ isCollapsed, toggleSidebar }) {
       icon: <ExamIcon size={18} />,
       url: "/examination",
     },
-        {
+    {
       label: "Database",
       id: "database",
       icon: <DatabaseIcon size={18} />,
