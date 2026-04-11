@@ -33,6 +33,7 @@ export const leave_edit_handle = `${host}/hr2/api/leave_edit_handle`;
 export const leave_file_handle = `${host}/hr2/api/leave_file_handle`;
 
 // LTC routes
+export const submit_ltc_form = `${host}/hr2/api/ltc/`;
 export const get_ltc_requests = `${host}/hr2/api/get_ltc_requests`;
 export const get_ltc_inbox = `${host}/hr2/api/get_ltc_inbox`;
 export const get_ltc_archive = `${host}/hr2/api/get_ltc_archive`;
@@ -41,14 +42,14 @@ export const get_ltc_archive = `${host}/hr2/api/get_ltc_archive`;
 export const get_cpda_adv_requests = `${host}/hr2/api/get_cpda_adv_requests`;
 export const get_cpda_adv_inbox = `${host}/hr2/api/get_cpda_adv_inbox`;
 export const get_cpda_adv_archive = `${host}/hr2/api/get_cpda_adv_archive`;
-export const submit_cpda_adv_form = `${host}/hr2/api/submit_cpda_adv_form`;
+export const submit_cpda_adv_form = `${host}/hr2/api/cpdaadv/`;
 export const view_cpda_adv_form = `${host}/hr2/api/view_cpda_adv_form_data`;
 
 // CPDA Claim routes
 export const get_cpda_claim_requests = `${host}/hr2/api/get_cpda_claim_requests`;
 export const get_cpda_claim_inbox = `${host}/hr2/api/get_cpda_claim_inbox`;
 export const get_cpda_claim_archive = `${host}/hr2/api/get_cpda_claim_archive`;
-export const submit_cpda_claim_form = `${host}/hr2/api/submit_cpda_reimbursement_form/`;
+export const submit_cpda_claim_form = `${host}/hr2/api/cpdareim/`;
 
 // Appraisal routes
 export const get_appraisal_requests = `${host}/hr2/api/get_appraisal_requests`;

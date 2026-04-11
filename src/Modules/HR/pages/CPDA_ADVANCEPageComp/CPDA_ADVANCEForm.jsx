@@ -14,8 +14,8 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { updateForm, resetForm } from "../../../../redux/formSlice";
 import {
-  search_employee,
-  get_my_details,
+  search_employees,
+  get_form_initials,
   submit_cpda_adv_form,
 } from "../../../../routes/hr";
 import "./CPDA_ADVANCEForm.css";
@@ -35,7 +35,7 @@ const CPDA_ADVANCEForm = () => {
           return;
         }
 
-        const response = await fetch(get_my_details, {
+        const response = await fetch(get_form_initials, {
           headers: { Authorization: `Token ${token}` },
         });
 
@@ -45,10 +45,11 @@ const CPDA_ADVANCEForm = () => {
         }
 
         const fetchedData = await response.json();
-        dispatch(updateForm({ name: "name", value: fetchedData.username }));
+        dispatch(updateForm({ name: "name", value: fetchedData.name || "" }));
         dispatch(
-          updateForm({ name: "designation", value: fetchedData.designation }),
+          updateForm({ name: "designation", value: fetchedData.last_selected_role || "" }),
         );
+        dispatch(updateForm({ name: "pfNo", value: fetchedData.pfno || "" }));
       } catch (error) {
         console.error("Failed to fetch user details:", error);
       }
@@ -64,7 +65,7 @@ const CPDA_ADVANCEForm = () => {
       }
 
       const response = await fetch(
-        `${search_employee}?search=${formData.username_reciever}`,
+        `${search_employees}?search_text=${formData.username_reciever}`,
         {
           headers: { Authorization: `Token ${token}` },
         },
@@ -76,17 +77,22 @@ const CPDA_ADVANCEForm = () => {
       }
 
       const fetchedReceiverData = await response.json();
+      const firstMatch = fetchedReceiverData?.employees?.[0];
+      if (!firstMatch) {
+        alert("Receiver not found. Please check the username and try again.");
+        return;
+      }
 
       dispatch(
         updateForm({
           name: "username_reciever",
-          value: formData.username_reciever,
+          value: firstMatch.username,
         }),
       );
       dispatch(
         updateForm({
           name: "designation_reciever",
-          value: fetchedReceiverData.designation,
+          value: firstMatch.designation,
         }),
       );
       setVerifiedReceiver(true);
@@ -161,9 +167,8 @@ const CPDA_ADVANCEForm = () => {
         }
 
         const response = await fetch(
-          `${submit_cpda_adv_form}/?username_reciever=${formData.username_reciever}`,
+          `${submit_cpda_adv_form}?username_reciever=${encodeURIComponent(formData.username_reciever || "")}`,
           {
-            // Note the trailing slash
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -185,7 +190,6 @@ const CPDA_ADVANCEForm = () => {
       }
     };
     submitForm();
-    dispatch(resetForm());
   };
 
   return (

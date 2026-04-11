@@ -23,6 +23,7 @@ import {
 } from "@phosphor-icons/react";
 import { useDispatch, useSelector } from "react-redux";
 import { updateForm, resetForm } from "../../../../redux/formSlice";
+import { submit_ltc_form } from "../../../../routes/hr";
 import "./LtcForm.css";
 
 const LtcForm = () => {
@@ -72,10 +73,70 @@ const LtcForm = () => {
     dispatch(updateForm({ name, value }));
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    console.log(formData);
-    dispatch(resetForm());
+
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      alert("Authentication token is missing.");
+      return;
+    }
+
+    const payload = {
+      employeeId: Number(formData.employeeId || 0) || null,
+      name: formData.name || "",
+      blockYear: String(formData.Blockyear || formData.blockYear || ""),
+      pfNo: Number(formData.providentFundNo || 0) || null,
+      basicPaySalary: Number(formData.basicPay || 0) || null,
+      designation: formData.designation || "",
+      departmentInfo: formData.departmentSection || "",
+      leaveRequired: formData.ltcAvailability === "Yes",
+      leaveStartDate: formData.leaveStartDate || formData.date || null,
+      leaveEndDate: formData.leaveEndDate || null,
+      dateOfDepartureForFamily: formData.dateOfDepartureForFamily || null,
+      natureOfLeave: formData.natureOfLeave || "",
+      purposeOfLeave: formData.purpose || "",
+      hometownOrNot: selectedPlace === "HomeTown",
+      placeOfVisit: selectedPlace === "ElseWhere" ? visitingPlace : "HomeTown",
+      addressDuringLeave: formData.addressDuringLeave || "",
+      modeofTravel: formData.modeOfTravel || "",
+      detailsOfFamilyMembersAlreadyDone: {
+        self: formData.selfName || "",
+        spouse: formData.wifeName || "",
+        childrenSummary: formData.Children || "",
+      },
+      detailsOfFamilyMembersAboutToAvail: childrenFields,
+      detailsOfDependents: dependentsFields,
+      amountOfAdvanceRequired: Number(formData.amount || 0) || null,
+      certifiedThatFamilyDependents: Boolean(formData.certificationDetails),
+      certifiedThatAdvanceTakenOn: formData.previousLTCDate || null,
+      adjustedMonth: formData.adjustedMonth || "",
+      submissionDate: formData.date || null,
+      phoneNumberForContact: Number(formData.phoneNumber || 0) || null,
+    };
+
+    try {
+      const response = await fetch(submit_ltc_form, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Token ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await response.json();
+      if (!response.ok) {
+        alert(result.error || result.message || "Failed to submit LTC form.");
+        return;
+      }
+
+      alert("LTC form submitted successfully!");
+      dispatch(resetForm());
+    } catch (error) {
+      console.error("Failed to submit LTC form:", error);
+      alert("Failed to submit LTC form. Please try again.");
+    }
   };
 
   // Handle changes for number of children
@@ -193,7 +254,7 @@ const LtcForm = () => {
                 type="number"
                 id="Blockyear"
                 name="Blockyear"
-                value={formData.providentFundNo}
+                value={formData.Blockyear}
                 placeholder="Block year"
                 onChange={handleChange}
                 className="input"
@@ -306,16 +367,16 @@ const LtcForm = () => {
 
         <div className="grid-row">
           <div className="grid-col">
-            <label className="input-label" htmlFor="date">
+            <label className="input-label" htmlFor="leaveStartDate">
               (b) (i) If so, duration of leave applied for From:
             </label>
             <div className="input-wrapper">
               <Calendar size={20} />
               <input
                 type="date"
-                id="date"
-                name="date"
-                value={formData.date}
+                id="leaveStartDate"
+                name="leaveStartDate"
+                value={formData.leaveStartDate}
                 onChange={handleChange}
                 className="input"
                 required
@@ -323,16 +384,16 @@ const LtcForm = () => {
             </div>
           </div>
           <div className="grid-col">
-            <label className="input-label" htmlFor="date">
+            <label className="input-label" htmlFor="leaveEndDate">
               To:
             </label>
             <div className="input-wrapper">
               <Calendar size={20} />
               <input
                 type="date"
-                id="date"
-                name="date"
-                value={formData.date}
+                id="leaveEndDate"
+                name="leaveEndDate"
+                value={formData.leaveEndDate}
                 onChange={handleChange}
                 className="input"
                 required
@@ -340,16 +401,16 @@ const LtcForm = () => {
             </div>
           </div>
           <div className="grid-col">
-            <label className="input-label" htmlFor="date">
+            <label className="input-label" htmlFor="dateOfDepartureForFamily">
               (ii) Date of departure of family, if not availing himself
             </label>
             <div className="input-wrapper">
               <Calendar size={20} />
               <input
                 type="date"
-                id="date"
-                name="date"
-                value={formData.date}
+                id="dateOfDepartureForFamily"
+                name="dateOfDepartureForFamily"
+                value={formData.dateOfDepartureForFamily}
                 onChange={handleChange}
                 className="input"
                 required

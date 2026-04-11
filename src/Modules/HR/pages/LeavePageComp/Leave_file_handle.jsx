@@ -83,6 +83,12 @@ const LeaveFileHandle = () => {
       return;
     }
 
+    const remarksText = (fileRemarks || "").trim();
+    if (action === "reject" && remarksText.length < 10) {
+      alert("Rejection remarks must be at least 10 characters long.");
+      return;
+    }
+
     if (action === "forward" && !forwardToUser) {
       alert("Please select a user to forward the leave form.");
       return;
@@ -111,14 +117,13 @@ const LeaveFileHandle = () => {
         }),
       });
 
+      const result = await response.json();
       if (!response.ok) {
         alert(
-          result.message || "Failed to handle leave action. Please try again.",
+          result.error || result.message || "Failed to handle leave action. Please try again.",
         );
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
-
-      const result = await response.json();
       alert(result.message || "Action completed successfully.");
       setFetchedFormData((prev) => ({
         ...prev,
