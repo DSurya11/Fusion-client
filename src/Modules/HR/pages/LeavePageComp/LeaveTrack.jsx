@@ -32,13 +32,10 @@ function LeaveTrack() {
   }, [admin]);
 
   const currentPath = window.location.pathname;
-
-  console.log("checking");
   useEffect(() => {
     const fetchLeaveTrack = async () => {
       const token = localStorage.getItem("authToken");
       if (!token) {
-        console.error("No authentication token found!");
         setLoading(false);
         return;
       }
@@ -50,7 +47,6 @@ function LeaveTrack() {
         setTrackData(data.file_history); // Set fetched data
         setLoading(false); // Set loading to false once data is fetched
       } catch (error) {
-        console.error("Failed to fetch leave Track:", error);
         setLoading(false); // Set loading to false if there’s an error
       }
     };

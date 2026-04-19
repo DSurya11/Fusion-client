@@ -68,7 +68,6 @@ function Leave() {
       try {
         // Fetch leave data here if needed
       } catch (error) {
-        console.error("Error fetching leave data:", error);
       } finally {
         setLoading(false);
       }

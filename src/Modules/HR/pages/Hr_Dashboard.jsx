@@ -1,6 +1,6 @@
 // export default Hr_Dashboard;
 
-import React from "react";
+import React, { useMemo } from "react";
 import { SimpleGrid } from "@mantine/core";
 // import { Link } from "react-router-dom";
 import {
@@ -63,25 +63,28 @@ const exampleItems = [
 
 function Hr_Dashboard() {
   const role = useSelector((state) => state.user.role);
-  console.log(role);
 
-  const features = mockdata.map((feature) => {
-    if (
-      feature.title === "Admin Leave Management" &&
-      role !== "SectionHead_HR"
-    ) {
-      return null;
-    }
-    return (
-      <PerformanceCard
-        key={feature.title}
-        IconComponent={feature.icon}
-        title={feature.title}
-        description={feature.description}
-        link={feature.link}
-      />
-    );
-  });
+  const features = useMemo(
+    () =>
+      mockdata.map((feature) => {
+        if (
+          feature.title === "Admin Leave Management" &&
+          role !== "SectionHead_HR"
+        ) {
+          return null;
+        }
+        return (
+          <PerformanceCard
+            key={feature.title}
+            IconComponent={feature.icon}
+            title={feature.title}
+            description={feature.description}
+            link={feature.link}
+          />
+        );
+      }),
+    [role],
+  );
 
   return (
     <div size="lg" className={classes.hrdashboardContainer}>

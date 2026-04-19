@@ -19,11 +19,11 @@ const ArchiveTable = ({ title, data, formType = undefined }) => {
       appraisal: `/hr/appraisal/file_handler/${id}?archive=true`,
     };
 
-    console.log(viewUrlMap[formType]);
+
     navigate(viewUrlMap[formType]); // Default to leaveform if formType is not matched
   };
   const handleTrackClick = (id) => {
-    console.log(formType);
+
 
     const trackUrlMap = {
       leave: `/hr/FormView/leaveform_track/${id}`,
@@ -33,7 +33,7 @@ const ArchiveTable = ({ title, data, formType = undefined }) => {
       appraisal: `/hr/FormView/appraisal_track/${id}`,
     };
 
-    console.log(trackUrlMap[formType]);
+
     navigate(trackUrlMap[formType]); // Default to leaveform_track if formType is not matched
   };
 
@@ -41,7 +41,7 @@ const ArchiveTable = ({ title, data, formType = undefined }) => {
     <div className="app-container">
       <Title
         order={2}
-        style={{ fontWeight: "500", marginTop: "40px", marginLeft: "15px" }}
+        className="hr-table-title"
       >
         {title}
       </Title>
@@ -66,7 +66,7 @@ const ArchiveTable = ({ title, data, formType = undefined }) => {
             <tbody>
               {data.map((item, index) => (
                 <tr className="table-row" key={index}>
-                  {console.log(item.id)}
+
                   <td>{item.id}</td>
                   <td>{item.uploader}</td>
                   <td>{item.designation}</td>

@@ -10,7 +10,6 @@ function AppraisalInbox() {
 
   useEffect(() => {
     const fetchAppraisalInbox = async () => {
-      console.log("Fetching Appraisal inbox...");
       try {
         const data = await fetchHrCollection(
           get_appraisal_inbox,
@@ -19,7 +18,6 @@ function AppraisalInbox() {
         setInboxData(data); // Set fetched data
         setLoading(false); // Set loading to false once data is fetched
       } catch (error) {
-        console.error("Failed to fetch Appraisal inbox:", error);
         setLoading(false); // Set loading to false if there’s an error
       }
     };

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import {
   Container,
   Title,
@@ -15,11 +15,11 @@ import {
 import { useNavigate } from "react-router-dom";
 import HrBreadcrumbs from "../../components/HrBreadcrumbs";
 import { admin_get_all_leave_balances } from "../../../../routes/hr";
+import { fetchJsonWithAuth } from "../../services/hrService";
 
 function ViewEmployeeLB() {
   const navigate = useNavigate();
   const [allEmployees, setAllEmployees] = useState([]);
-  const [filteredEmployees, setFilteredEmployees] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [departmentFilter, setDepartmentFilter] = useState("All");
   const [loading, setLoading] = useState(false);
@@ -95,25 +95,12 @@ function ViewEmployeeLB() {
   // Fetch employee/leave details from the API.
   useEffect(() => {
     const fetchEmployeesAndLeaveData = async () => {
-      const token = localStorage.getItem("authToken");
-      if (!token) {
-        setError("Authentication token is missing.");
-        return;
-      }
       setLoading(true);
       try {
-        const response = await fetch(admin_get_all_leave_balances, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Token ${token}`,
-          },
-        });
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || "Failed to fetch leave details");
-        }
-        const data = await response.json();
+        const data = await fetchJsonWithAuth(
+          admin_get_all_leave_balances,
+          "Failed to fetch leave details",
+        );
         const mergedData = data.leave_balances.map((emp) => {
           const { employee_id, employee_username, employee_fullname, ...rest } =
             emp;
@@ -125,7 +112,6 @@ function ViewEmployeeLB() {
           };
         });
         setAllEmployees(mergedData);
-        setFilteredEmployees(mergedData);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -153,21 +139,24 @@ function ViewEmployeeLB() {
     setDepartmentFilter(value);
   };
 
-  // Apply filtering based on search query and selected department.
-  useEffect(() => {
+  const filteredEmployees = useMemo(() => {
     let filtered = allEmployees;
-    if (searchQuery.trim()) {
+    const normalizedQuery = searchQuery.trim().toLowerCase();
+
+    if (normalizedQuery) {
       filtered = filtered.filter(
         (emp) =>
-          emp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          emp.username.toLowerCase().includes(searchQuery.toLowerCase()),
+          emp.name.toLowerCase().includes(normalizedQuery) ||
+          emp.username.toLowerCase().includes(normalizedQuery),
       );
     }
+
     if (departmentFilter !== "All") {
       filtered = filtered.filter((emp) => emp.department === departmentFilter);
     }
-    setFilteredEmployees(filtered);
-  }, [searchQuery, departmentFilter, allEmployees]);
+
+    return filtered;
+  }, [allEmployees, searchQuery, departmentFilter]);
 
   // Handle row click to navigate to employee's leave review page
   const handleRowClick = (username) => {

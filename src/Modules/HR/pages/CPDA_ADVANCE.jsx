@@ -69,15 +69,12 @@ function CPDA_ADVANCE() {
       try {
         // Fetch CPDA_ADVANCE data here if needed
       } catch (error) {
-        console.error("Error fetching CPDA_ADVANCE data:", error);
       } finally {
         setLoading(false);
       }
     };
     fetchCpda_ADVANCEData();
   }, []);
-  console.log(activeTab);
-
   return (
     <>
       <HrBreadcrumbs items={exampleItems} />

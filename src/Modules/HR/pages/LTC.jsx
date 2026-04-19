@@ -70,7 +70,6 @@ function LTC() {
       try {
         // Fetch LTC data here if needed
       } catch (error) {
-        console.error("Error fetching LTC data:", error);
       } finally {
         setLoading(false);
       }

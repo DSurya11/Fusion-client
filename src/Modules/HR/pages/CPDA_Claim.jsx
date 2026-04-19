@@ -64,7 +64,6 @@ function CPDA_Claim() {
       try {
         // Fetch CPDA_Claim data here if needed
       } catch (error) {
-        console.error("Error fetching CPDA_Claim data:", error);
       } finally {
         setLoading(false);
       }

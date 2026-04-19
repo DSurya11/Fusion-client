@@ -24,7 +24,7 @@ const TrackTable = ({ title, data, exampleItems }) => {
 
       <Title
         order={2}
-        style={{ fontWeight: "500", marginTop: "40px", marginLeft: "15px" }}
+        className="hr-table-title"
       >
         {title}
       </Title>

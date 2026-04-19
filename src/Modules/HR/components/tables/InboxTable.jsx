@@ -19,13 +19,9 @@ const InboxTable = ({ title, data, formType }) => {
       cpda_claim: `/hr/cpda_claim/file_handler/${id}`,
       appraisal: `/hr/appraisal/file_handler/${id}`,
     };
-
-    console.log(formType);
     navigate(viewUrlMap[formType]); // Default to leaveform if formType is not matched
   };
   const handleTrackClick = (id) => {
-    console.log(formType);
-
     const trackUrlMap = {
       leave: `/hr/FormView/leaveform_track/${id}`,
       cpda_adv: `/hr/FormView/cpda_adv_track/${id}`,
@@ -41,7 +37,7 @@ const InboxTable = ({ title, data, formType }) => {
     <div className="app-container">
       <Title
         order={2}
-        style={{ fontWeight: "500", marginTop: "40px", marginLeft: "15px" }}
+        className="hr-table-title"
       >
         {title}
       </Title>

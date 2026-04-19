@@ -1,21 +1,31 @@
-import React, { useState, useEffect } from "react";
-import { Title, Select, TextInput, Alert, Divider } from "@mantine/core";
+import React, { useState, useEffect, useMemo } from "react";
+import {
+  Title,
+  Select,
+  TextInput,
+  Alert,
+  Divider,
+  Pagination,
+} from "@mantine/core";
 import { useSearchParams } from "react-router-dom";
 import { Eye } from "@phosphor-icons/react";
 import LoadingComponent from "../../components/Loading";
 import { EmptyTable } from "../../components/tables/EmptyTable";
 import SearchEmployee from "../../components/SearchEmployee";
 import HrBreadcrumbs from "../../components/HrBreadcrumbs";
-import "./LeaveRequests.css";
+import "../../components/tables/Table.css";
 import { admin_get_leave_requests } from "../../../../routes/hr";
+import { fetchJsonWithAuth } from "../../services/hrService";
 
 function AdminLeaveRequests() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [requestData, setRequestData] = useState([]);
-  const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState("All");
   const [selectedDate, setSelectedDate] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize] = useState(20);
+  const [totalCount, setTotalCount] = useState(0);
   const [searchParams] = useSearchParams();
   const [accessError, setAccessError] = useState(null);
   const [autoSearchCompleted, setAutoSearchCompleted] = useState(false);
@@ -42,49 +52,42 @@ function AdminLeaveRequests() {
     const fetchLeaveRequests = async () => {
       setLoading(true);
       setAccessError(null);
-      const token = localStorage.getItem("authToken");
-      if (!token) {
-        console.error("No authentication token found!");
-        return;
-      }
+
       try {
         const queryParams = new URLSearchParams();
         if (selectedDate) {
           queryParams.append("date", selectedDate);
         }
+        queryParams.append("limit", String(pageSize));
+        queryParams.append("offset", String((page - 1) * pageSize));
 
-        const response = await fetch(
+        const data = await fetchJsonWithAuth(
           `${admin_get_leave_requests}/${selectedUser.id}?${queryParams.toString()}`,
-          {
-            headers: { Authorization: `Token ${token}` },
-          },
+          "Failed to fetch leave requests",
         );
-
-        if (response.status === 403) {
-          setAccessError(
-            "You do not have access to this employee's leave requests",
-          );
-          setLoading(false);
-          return;
-        }
-
-        const data = await response.json();
 
         const sortedData =
           data.leave_requests?.sort((a, b) => {
             return new Date(b.submissionDate) - new Date(a.submissionDate);
           }) || [];
 
+        setTotalCount(data?.meta?.total_count || sortedData.length);
+
         setRequestData(sortedData);
-        setFilteredData(sortedData);
-        setLoading(false);
       } catch (error) {
-        console.error("Failed to fetch leave requests:", error);
+        if (error?.status === 403) {
+          setAccessError(
+            "You do not have access to this employee's leave requests",
+          );
+        } else {
+          setAccessError(error?.message || "Failed to fetch leave requests");
+        }
+      } finally {
         setLoading(false);
       }
     };
     fetchLeaveRequests();
-  }, [selectedUser, selectedDate]);
+  }, [selectedUser, selectedDate, page, pageSize]);
 
   const handleViewClick = (view) => {
     window.open(`../leave/view/${view}?admin=true`, "_blank");
@@ -105,15 +108,10 @@ function AdminLeaveRequests() {
 
   const handleStatusFilterChange = (value) => {
     setSelectedStatus(value);
-    if (value === "All") {
-      setFilteredData(requestData);
-    } else {
-      const filtered = requestData.filter((item) => item.status === value);
-      setFilteredData(filtered);
-    }
   };
 
   const handleDateFilterChange = (event) => {
+    setPage(1);
     setSelectedDate(event.target.value);
   };
 
@@ -128,9 +126,17 @@ function AdminLeaveRequests() {
 
   const handleEmployeeSelect = (employee) => {
     setSelectedUser(employee);
+    setPage(1);
     setAccessError(null);
     setAutoSearchCompleted(true);
   };
+
+  const filteredData = useMemo(() => {
+    if (selectedStatus === "All") return requestData;
+    return requestData.filter((item) => item.status === selectedStatus);
+  }, [requestData, selectedStatus]);
+
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
   const headers = [
     "ID",
@@ -146,7 +152,7 @@ function AdminLeaveRequests() {
       <HrBreadcrumbs items={exampleItems} />
       <Title
         order={2}
-        style={{ fontWeight: "500", marginTop: "40px", marginLeft: "15px" }}
+        className="hr-table-title"
       >
         Admin Leave Requests
       </Title>
@@ -157,14 +163,7 @@ function AdminLeaveRequests() {
         </Alert>
       )}
 
-      <div
-        style={{
-          margin: "20px 15px",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center", // Align items vertically in the center
-        }}
-      >
+      <div className="hr-toolbar">
         {/* Left Side: Search Component */}
         <SearchEmployee
           onEmployeeSelect={handleEmployeeSelect}
@@ -175,7 +174,7 @@ function AdminLeaveRequests() {
 
         {/* Right Side: Selected Employee */}
         {selectedUser && !accessError && (
-          <Title order={4} style={{ fontWeight: 400 }}>
+          <Title order={4} className="hr-toolbar-right">
             Selected Employee:{" "}
             <span style={{ fontWeight: 500, color: "#15a9fff1" }}>
               {selectedUser.username}
@@ -186,16 +185,9 @@ function AdminLeaveRequests() {
       <Divider my="sm" />
 
       {selectedUser && !accessError && (
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            margin: "20px 15px",
-          }}
-        >
+        <div className="hr-toolbar">
           {/* Left Side: Filters */}
-          <div style={{ display: "flex", gap: "20px" }}>
+          <div className="hr-toolbar-left">
             <TextInput
               label="Filter by Date"
               placeholder="Select or enter a date"
@@ -219,7 +211,7 @@ function AdminLeaveRequests() {
           </div>
 
           {/* Right Side: Showing Results */}
-          <Title order={4} style={{ fontWeight: "400" }}>
+          <Title order={4} className="hr-toolbar-right">
             {selectedDate
               ? `Filtered results as of ${new Date(
                   selectedDate,
@@ -272,10 +264,8 @@ function AdminLeaveRequests() {
                     <td>{item.submissionDate}</td>
                     <td>
                       <span
-                        style={{
-                          color: getStatusColor(item.status),
-                          fontWeight: "bold",
-                        }}
+                        className="hr-status-pill"
+                        style={{ color: getStatusColor(item.status) }}
                       >
                         {item.status}
                       </span>
@@ -292,6 +282,9 @@ function AdminLeaveRequests() {
                 ))}
               </tbody>
             </table>
+            <div className="hr-pagination-wrap">
+              <Pagination value={page} onChange={setPage} total={totalPages} />
+            </div>
           </div>
         ))}
     </div>

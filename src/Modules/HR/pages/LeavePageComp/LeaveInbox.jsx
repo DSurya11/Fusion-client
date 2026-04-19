@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Title, Select, TextInput, Badge } from "@mantine/core";
+import { Title, Select, TextInput, Badge, Text } from "@mantine/core";
 import { useNavigate } from "react-router-dom";
 import { Eye } from "@phosphor-icons/react";
 import LoadingComponent from "../../components/Loading";
 import { EmptyTable } from "../../components/tables/EmptyTable";
 import { get_leave_inbox } from "../../../../routes/hr/index";
-import "./LeaveInbox.css";
+import { useAPIErrorHandling } from "../../../../hooks/useCustom";
+import "../../components/tables/Table.css";
 
 function LeaveInbox() {
   const [inboxData, setInboxData] = useState([]);
@@ -16,6 +17,7 @@ function LeaveInbox() {
   const [selectedType, setSelectedType] = useState("All");
   const [fromDate, setFromDate] = useState("");
   const navigate = useNavigate();
+  const { error, handleError, clearError } = useAPIErrorHandling();
 
   const applyFilters = (status, type, date, data = inboxData) => {
     setFiltering(true);
@@ -45,9 +47,10 @@ function LeaveInbox() {
   useEffect(() => {
     const fetchInboxData = async () => {
       setLoading(true);
+      clearError();
       const token = localStorage.getItem("authToken");
       if (!token) {
-        console.error("No authentication token found!");
+        handleError({ message: "No authentication token found!" });
         setLoading(false);
         return;
       }
@@ -62,6 +65,13 @@ function LeaveInbox() {
             headers: { Authorization: `Token ${token}` },
           },
         );
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          handleError(errorData.error || { message: `HTTP ${response.status}` });
+          setLoading(false);
+          return;
+        }
 
         const data = await response.json();
         const combinedData = [
@@ -84,8 +94,8 @@ function LeaveInbox() {
 
         setInboxData(combinedData);
         applyFilters(selectedStatus, selectedType, fromDate, combinedData); // <== call filters after fetch
-      } catch (error) {
-        console.error("Failed to fetch leave inbox:", error);
+      } catch (err) {
+        handleError({ message: err.message || "Failed to fetch leave inbox" });
       } finally {
         setLoading(false);
       }
@@ -161,21 +171,28 @@ function LeaveInbox() {
     <div className="app-container">
       <Title
         order={2}
-        style={{ fontWeight: "500", marginTop: "40px", marginLeft: "15px" }}
+        className="hr-table-title"
       >
         Leave Inbox
       </Title>
 
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          margin: "20px 15px",
-        }}
-      >
+      {error && (
+        <Text
+          c="red"
+          style={{
+            margin: "15px",
+            padding: "10px",
+            backgroundColor: "#ffe0e0",
+            borderRadius: "4px",
+          }}
+        >
+          {error.message || "An error occurred"}
+        </Text>
+      )}
+
+      <div className="hr-toolbar">
         {/* Filters section */}
-        <div style={{ display: "flex", gap: "20px" }}>
+        <div className="hr-toolbar-left">
           <TextInput
             label="Filter from Date"
             type="date"
@@ -216,7 +233,7 @@ function LeaveInbox() {
         </div>
 
         {/* Filtered results text section */}
-        <Title order={4} style={{ fontWeight: "400", marginLeft: "auto" }}>
+        <Title order={4} className="hr-toolbar-right">
           {fromDate
             ? `Filtered results as of ${new Date(fromDate).toLocaleDateString(
                 "en-US",

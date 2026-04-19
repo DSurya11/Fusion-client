@@ -3,12 +3,10 @@ import { Select } from "@mantine/core";
 import PropTypes from "prop-types";
 import { searchEmployees } from "../services/hrService";
 
-function SearchEmployee({ onEmployeeSelect, initialSearch }) {
+function SearchEmployee({ onEmployeeSelect, initialSearch, onSearchError }) {
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [error, setError] = useState(null);
-  const [searchText, setSearchText] = useState(initialSearch || "");
 
   const hasAutoSearched = useRef(false);
 
@@ -18,25 +16,13 @@ function SearchEmployee({ onEmployeeSelect, initialSearch }) {
       return;
     }
 
-    const token = localStorage.getItem("authToken");
-    if (!token) {
-      setError("Authentication token is missing.");
-      return;
-    }
-
     setLoading(true);
     setError(null);
 
     try {
-      const response = await searchEmployees(text);
+      const employees = await searchEmployees(text);
 
-      if (!response.ok) {
-        throw new Error(`Failed to fetch employees: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-
-      const uniqueEmployees = data.employees.reduce((acc, employee) => {
+      const uniqueEmployees = employees.reduce((acc, employee) => {
         if (!acc[employee.id]) {
           acc[employee.id] = {
             value: `${employee.id}-${employee.username}`,
@@ -52,7 +38,9 @@ function SearchEmployee({ onEmployeeSelect, initialSearch }) {
 
       return formattedResults;
     } catch (err) {
-      setError("Unable to fetch employees.");
+      const errorMsg = "Unable to fetch employees.";
+      setError(errorMsg);
+      onSearchError?.(errorMsg);
       return [];
     } finally {
       setLoading(false);
@@ -63,8 +51,6 @@ function SearchEmployee({ onEmployeeSelect, initialSearch }) {
     const employee = searchResults.find(
       (result) => result.value === selectedValue,
     );
-    setSelectedEmployee(employee?.details || null);
-    console.log(selectedEmployee);
 
     if (onEmployeeSelect && employee?.details) {
       onEmployeeSelect(employee.details);
@@ -75,12 +61,9 @@ function SearchEmployee({ onEmployeeSelect, initialSearch }) {
     const autoSearch = async () => {
       if (initialSearch && !hasAutoSearched.current) {
         hasAutoSearched.current = true;
-        setSearchText(initialSearch);
-        console.log(searchText);
         const results = await fetchEmployees(initialSearch);
         if (results.length > 0) {
           const firstEmployee = results[0];
-          setSelectedEmployee(firstEmployee.details);
           onEmployeeSelect?.(firstEmployee.details);
         }
       }
@@ -97,7 +80,6 @@ function SearchEmployee({ onEmployeeSelect, initialSearch }) {
         nothingFound={error || "No employees found"}
         data={searchResults}
         onSearchChange={(val) => {
-          setSearchText(val);
           fetchEmployees(val);
         }}
         onChange={handleEmployeeSelection}
@@ -111,6 +93,7 @@ function SearchEmployee({ onEmployeeSelect, initialSearch }) {
 SearchEmployee.propTypes = {
   onEmployeeSelect: PropTypes.func,
   initialSearch: PropTypes.string,
+  onSearchError: PropTypes.func,
 };
 
 export default SearchEmployee;

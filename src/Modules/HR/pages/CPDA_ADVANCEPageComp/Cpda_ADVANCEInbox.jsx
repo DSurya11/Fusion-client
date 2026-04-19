@@ -10,7 +10,6 @@ function Cpda_ADVANCEInbox() {
 
   useEffect(() => {
     const fetchCPDAInbox = async () => {
-      console.log("Fetching CPDA Advance inbox...");
       try {
         const data = await fetchHrCollection(
           get_cpda_adv_inbox,
@@ -19,7 +18,6 @@ function Cpda_ADVANCEInbox() {
         setInboxData(data); // Set fetched data
         setLoading(false); // Set loading to false once data is fetched
       } catch (error) {
-        console.error("Failed to fetch CPDA Advance inbox:", error);
         setLoading(false); // Set loading to false if there’s an error
       }
     };

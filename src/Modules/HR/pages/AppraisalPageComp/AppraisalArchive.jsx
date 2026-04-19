@@ -10,7 +10,6 @@ function AppraisalArchive() {
 
   useEffect(() => {
     const fetchAppraisalArchive = async () => {
-      console.log("Fetching Appraisal archive...");
       try {
         const data = await fetchHrCollection(
           get_appraisal_archive,
@@ -19,7 +18,6 @@ function AppraisalArchive() {
         setArchiveData(data); // Set fetched data
         setLoading(false); // Set loading to false once data is fetched
       } catch (error) {
-        console.error("Failed to fetch Appraisal archive:", error);
         setLoading(false); // Set loading to false if there’s an error
       }
     };

@@ -9,10 +9,8 @@ function LTCInbox() {
 
   useEffect(() => {
     const fetchLTCInbox = async () => {
-      console.log("Fetching LTC inbox...");
       const token = localStorage.getItem("authToken");
       if (!token) {
-        console.error("No authentication token found!");
         setLoading(false);
         return;
       }
@@ -23,9 +21,7 @@ function LTCInbox() {
         const data = await response.json();
         setInboxData(data.ltc_inbox); // Set fetched data
         setLoading(false); // Set loading to false once data is fetched
-        console.log(data);
       } catch (error) {
-        console.error("Failed to fetch LTC inbox:", error);
         setLoading(false); // Set loading to false if there’s an error
       }
     };

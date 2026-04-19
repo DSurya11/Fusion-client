@@ -45,7 +45,6 @@ const LeaveHandleResponsibility = () => {
     const fetchFormData = async () => {
       const token = localStorage.getItem("authToken");
       if (!token) {
-        console.error("No authentication token found!");
         setLoading(false);
         return;
       }
@@ -60,11 +59,9 @@ const LeaveHandleResponsibility = () => {
         }
 
         const data = await response.json();
-        console.log(data);
         setFetchedFormData(data.leave_form); // Assuming the API returns data in a `leave_form` key
         setLoading(false);
       } catch (error) {
-        console.error("Failed to fetch form data:", error);
         setError("Failed to fetch form data.");
         setLoading(false);
       }
@@ -88,7 +85,6 @@ const LeaveHandleResponsibility = () => {
     }
 
     try {
-      console.log({ action });
       const response = await fetch(`${apiurl}/${id}/`, {
         method: "POST",
         headers: {
@@ -112,7 +108,6 @@ const LeaveHandleResponsibility = () => {
         status: action === "reject" ? "Rejected" : prev.status,
       }));
     } catch (error) {
-      console.error("Error handling responsibility:", error);
       setError("Failed to handle responsibility.");
     }
   };

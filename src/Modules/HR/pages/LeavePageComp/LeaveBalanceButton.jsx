@@ -12,7 +12,6 @@ const LeaveBalanceButton = () => {
   const fetchLeaveBalance = async () => {
     const token = localStorage.getItem("authToken");
     if (!token) {
-      console.error("No authentication token found!");
       setError("Authentication token is missing.");
       setLoading(false);
       return;
@@ -32,7 +31,6 @@ const LeaveBalanceButton = () => {
       const data = await response.json();
       setLeaveBalance(data.leave_balance); // Extract 'leave_balance' object from response
     } catch (err) {
-      console.error(err.message);
       setError("Failed to fetch leave balance.");
     } finally {
       setLoading(false);

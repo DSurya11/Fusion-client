@@ -63,13 +63,18 @@ function Appraisal() {
   };
 
   // Fetch any necessary Appraisal data
+  // NOTE: Currently no server-side data is needed at the page level;
+  // individual tab components fetch their own data. Keeping this hook
+  // for future use (e.g. fetching appraisal cycle config).
   useEffect(() => {
     const fetchAppraisalData = async () => {
       setLoading(true);
       try {
-        // Fetch Appraisal data here if needed
+        // Reserved: fetch appraisal cycle configuration or reviewer assignments here
       } catch (error) {
-        console.error("Error fetching Appraisal data:", error);
+        // BUG FIX: Empty catch block replaced with error logging.
+        // TODO: Replace with Mantine notifications once notifications are wired.
+        console.error('[Appraisal] Failed to load appraisal data:', error);
       } finally {
         setLoading(false);
       }
@@ -116,8 +121,10 @@ function Appraisal() {
           </Tabs>
         </div>
         <Button
-          style={{ marginLeft: "320px" }}
-          onClick={() => handleButtonChange("next")}
+          // BUG FIX: Replaced hardcoded marginLeft: '320px' (broke layout on narrow screens)
+          // with a responsive CSS class from the module stylesheet.
+          className={classes.fusionTabNextButton}
+          onClick={() => handleButtonChange('next')}
           variant="default"
           p={0}
         >

@@ -10,12 +10,14 @@ import {
   Group,
   Textarea,
 } from "@mantine/core";
+import { showNotification } from "@mantine/notifications";
 import {
   get_employee_initials,
   offline_leave_form,
 } from "../../../../routes/hr";
 import "./LeaveForm.css";
 import SearchAndSelectUser from "../../components/SearchAndSelectUser";
+import { fetchJsonWithAuth, submitFormDataWithAuth } from "../../services/hrService";
 
 import HrBreadcrumbs from "../../components/HrBreadcrumbs";
 
@@ -70,25 +72,16 @@ function OfflineLeaveForm() {
   const fetchEmployeeDetails = async (employeeId) => {
     setLoading(true);
     setError(null);
-    const token = localStorage.getItem("authToken");
-    if (!token) {
-      setError("Authentication token is missing.");
-      setLoading(false);
-      return;
-    }
     try {
-      const response = await fetch(`${get_employee_initials}/${employeeId}`, {
-        headers: { Authorization: `Token ${token}` },
-      });
-      if (!response.ok) {
-        throw new Error(`Error fetching details: ${response.statusText}`);
-      }
-      const data = await response.json();
+      const data = await fetchJsonWithAuth(
+        `${get_employee_initials}/${employeeId}`,
+        "Failed to fetch employee details.",
+      );
       setDetails(data);
-      console.log(details);
     } catch (err) {
-      setError("Failed to fetch employee details.");
-      console.error(err.message);
+      const message = err?.message || "Failed to fetch employee details.";
+      setError(message);
+      showNotification({ color: "red", title: "Error", message });
     } finally {
       setLoading(false);
     }
@@ -112,7 +105,11 @@ function OfflineLeaveForm() {
     if (file && file.type === "application/pdf") {
       setAttachedPdf(file);
     } else {
-      alert("Please upload a valid PDF file.");
+      showNotification({
+        color: "red",
+        title: "Invalid file",
+        message: "Please upload a valid PDF file.",
+      });
     }
   };
 
@@ -126,7 +123,11 @@ function OfflineLeaveForm() {
       !formData.purpose ||
       !forwardTo
     ) {
-      alert("Required fields: Leave dates, purpose, and forward to!");
+      showNotification({
+        color: "red",
+        title: "Missing fields",
+        message: "Required fields: Leave dates, purpose, and forward to.",
+      });
       setActiveSubmit(true);
       return;
     }
@@ -137,9 +138,12 @@ function OfflineLeaveForm() {
         !formData.stationLeaveEndDate ||
         !formData.stationLeaveAddress)
     ) {
-      alert(
-        "Station leave details are required when station leave is checked!",
-      );
+      showNotification({
+        color: "red",
+        title: "Missing station leave details",
+        message:
+          "Station leave details are required when station leave is checked.",
+      });
       setActiveSubmit(true);
       return;
     }
@@ -163,9 +167,11 @@ function OfflineLeaveForm() {
     );
 
     if (invalidField) {
-      alert(
-        `"${invalidField.replace(/([A-Z])/g, " $1")}" must be a non-negative integer!`,
-      );
+      showNotification({
+        color: "red",
+        title: "Invalid leave count",
+        message: `"${invalidField.replace(/([A-Z])/g, " $1")}" must be a non-negative integer.`,
+      });
       setActiveSubmit(true);
       return;
     }
@@ -258,28 +264,28 @@ function OfflineLeaveForm() {
     }
 
     try {
-      const response = await fetch(offline_leave_form, {
-        method: "POST",
-        headers: {
-          Authorization: `Token ${localStorage.getItem("authToken")}`,
-        },
-        body: formDataObj,
+      const result = await submitFormDataWithAuth(
+        offline_leave_form,
+        formDataObj,
+        "Failed to submit offline leave form.",
+      );
+
+      showNotification({
+        color: "green",
+        title: "Success",
+        message: result.message || "Form submitted successfully.",
       });
-
-      if (!response.ok) {
-        throw new Error(`Error: ${response.statusText}`);
-      }
-
-      const result = await response.json();
-      alert(result.message || "Form submitted successfully!");
 
       // redirec to /hr/admin_leave/review_leave_requests?emp=mayur
       navigate(
         `/hr/admin_leave/review_leave_requests?emp=${selectedEmployee.username}`,
       );
     } catch (er) {
-      console.error("Submission error:", er);
-      alert("Failed to submit the form. Please try again later.");
+      showNotification({
+        color: "red",
+        title: "Submission failed",
+        message: er?.message || "Failed to submit the form. Please try again later.",
+      });
     } finally {
       setActiveSubmit(true);
     }

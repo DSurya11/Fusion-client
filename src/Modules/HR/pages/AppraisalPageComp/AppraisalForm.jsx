@@ -60,7 +60,6 @@ function AppraisalForm() {
   };
   const handleSubmit = (event) => {
     event.preventDefault();
-    console.log("Form submitted:", rows);
   };
 
   return (

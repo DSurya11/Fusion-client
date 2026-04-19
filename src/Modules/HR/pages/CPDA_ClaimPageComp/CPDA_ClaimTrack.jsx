@@ -24,10 +24,8 @@ function CPDA_ClaimTrack() {
 
   useEffect(() => {
     const fetchCPDAClaimTrack = async () => {
-      console.log("Fetching CPDA Claim Track...");
       const token = localStorage.getItem("authToken");
       if (!token) {
-        console.error("No authentication token found!");
         setLoading(false);
         return;
       }
@@ -38,9 +36,7 @@ function CPDA_ClaimTrack() {
         const data = await response.json();
         setTrackData(data.file_history); // Set fetched data
         setLoading(false); // Set loading to false once data is fetched
-        console.log(data);
       } catch (error) {
-        console.error("Failed to fetch CPDA Claim Track:", error);
         setLoading(false); // Set loading to false if there’s an error
       }
     };

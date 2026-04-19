@@ -9,10 +9,12 @@ import {
   Group,
   Textarea,
 } from "@mantine/core";
+import { showNotification } from "@mantine/notifications";
 import { get_form_initials, submit_leave_form } from "../../../../routes/hr";
 import "./LeaveForm.css";
 import SearchAndSelectUser from "../../components/SearchAndSelectUser";
 import { useNavigate } from "react-router-dom";
+import { fetchJsonWithAuth, submitFormDataWithAuth } from "../../services/hrService";
 
 const LeaveForm = () => {
   const [stationLeave, setStationLeave] = useState(false);
@@ -55,26 +57,16 @@ const LeaveForm = () => {
 
   const fetchDetails = async () => {
     setLoading(true);
-    const token = localStorage.getItem("authToken");
-    if (!token) {
-      console.error("No authentication token found!");
-      setError("Authentication token is missing.");
-      setLoading(false);
-      return;
-    }
-
     try {
-      const response = await fetch(get_form_initials, {
-        headers: { Authorization: `Token ${token}` },
-      });
-      if (!response.ok) {
-        throw new Error(`Error fetching details: ${response.statusText}`);
-      }
-      const data = await response.json();
+      const data = await fetchJsonWithAuth(
+        get_form_initials,
+        "Failed to fetch user details.",
+      );
       setDetails(data);
     } catch (err) {
-      setError("Failed to fetch user details.");
-      console.error(err.message);
+      const message = err?.message || "Failed to fetch user details.";
+      setError(message);
+      showNotification({ color: "red", title: "Error", message });
     } finally {
       setLoading(false);
     }
@@ -97,7 +89,11 @@ const LeaveForm = () => {
     if (file && file.type === "application/pdf") {
       setAttachedPdf(file);
     } else {
-      alert("Please upload a valid PDF file.");
+      showNotification({
+        color: "red",
+        title: "Invalid file",
+        message: "Please upload a valid PDF file.",
+      });
     }
   };
 
@@ -111,7 +107,11 @@ const LeaveForm = () => {
       !formData.purpose ||
       !forwardTo
     ) {
-      alert("Required fields: Leave dates, purpose, and forward to!");
+      showNotification({
+        color: "red",
+        title: "Missing fields",
+        message: "Required fields: Leave dates, purpose, and forward to.",
+      });
       setActiveSubmit(true);
       return;
     }
@@ -122,9 +122,12 @@ const LeaveForm = () => {
         !formData.stationLeaveEndDate ||
         !formData.stationLeaveAddress)
     ) {
-      alert(
-        "Station leave details are required when station leave is checked!",
-      );
+      showNotification({
+        color: "red",
+        title: "Missing station leave details",
+        message:
+          "Station leave details are required when station leave is checked.",
+      });
       setActiveSubmit(true);
       return;
     }
@@ -145,9 +148,11 @@ const LeaveForm = () => {
 
     for (const field of leaveFields) {
       if (!/^\d+$/.test(formData[field])) {
-        alert(
-          `"${field.replace(/([A-Z])/g, " $1")}" must be a non-negative integer!`,
-        );
+        showNotification({
+          color: "red",
+          title: "Invalid leave count",
+          message: `"${field.replace(/([A-Z])/g, " $1")}" must be a non-negative integer.`,
+        });
         setActiveSubmit(true);
         return;
       }
@@ -213,27 +218,24 @@ const LeaveForm = () => {
     }
 
     try {
-      const token = localStorage.getItem("authToken");
-      const response = await fetch(submit_leave_form, {
-        method: "POST",
-        headers: {
-          Authorization: `Token ${token}`,
-        },
-        body: finalFormData,
+      await submitFormDataWithAuth(
+        submit_leave_form,
+        finalFormData,
+        "Form submission failed.",
+      );
+      showNotification({
+        color: "green",
+        title: "Success",
+        message: "Leave form submitted successfully.",
       });
-
-      if (!response.ok) {
-        setActiveSubmit(true);
-        throw new Error(`Error submitting form: ${response.statusText}`);
-      }
-
-      const result = await response.json();
-      alert("Form submitted successfully!");
       setActiveSubmit(true);
       navigate("/hr/leave/leaverequests");
     } catch (err) {
-      console.error("Form submission failed:", err.message);
-      alert("Form submission failed. Please try again.");
+      showNotification({
+        color: "red",
+        title: "Submission failed",
+        message: err?.message || "Form submission failed. Please try again.",
+      });
       setActiveSubmit(true);
     }
   };

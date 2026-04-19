@@ -48,7 +48,6 @@ const LeaveFileHandle = () => {
     const fetchFormData = async () => {
       const token = localStorage.getItem("authToken");
       if (!token) {
-        console.error("No authentication token found!");
         setError("Authentication token is missing.");
         setLoading(false);
         return;
@@ -65,10 +64,8 @@ const LeaveFileHandle = () => {
 
         const data = await response.json();
         setFetchedFormData(data.leave_form); // Assuming the API returns data in a `leave_form` key
-        console.log("Fetched form data:", data.leave_form);
         setLoading(false);
       } catch (error) {
-        console.error("Failed to fetch form data:", error);
         setError("Failed to fetch form data. Please try again.");
         setLoading(false);
       }
@@ -135,7 +132,6 @@ const LeaveFileHandle = () => {
               : "Forwarded",
       }));
     } catch (error) {
-      console.error("Failed to handle leave action:", error);
       alert("You are not authorized to perform this action.");
       setError("Failed to handle leave action. Please try again.");
     } finally {
@@ -145,7 +141,6 @@ const LeaveFileHandle = () => {
   const handleDownloadPdf = async () => {
     const token = localStorage.getItem("authToken");
     if (!token) {
-      console.error("No authentication token found!");
       return;
     }
 
@@ -165,7 +160,6 @@ const LeaveFileHandle = () => {
       a.download = fetchedformData.attachedPdfName;
       a.click();
     } catch (error) {
-      console.error("Failed to download PDF:", error);
     }
   };
   if (loading) {

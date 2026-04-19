@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Button } from "@mantine/core";
+import { showNotification } from "@mantine/notifications";
 import {
   PaperPlaneRight,
   CheckCircle,
@@ -14,10 +15,14 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { updateForm, resetForm } from "../../../../redux/formSlice";
 import {
-  search_employees,
   get_form_initials,
   submit_cpda_adv_form,
 } from "../../../../routes/hr";
+import {
+  fetchJsonWithAuth,
+  searchEmployees,
+  submitJsonWithAuth,
+} from "../../services/hrService";
 import "./CPDA_ADVANCEForm.css";
 
 const CPDA_ADVANCEForm = () => {
@@ -29,57 +34,36 @@ const CPDA_ADVANCEForm = () => {
   useEffect(() => {
     const fetchMyDetails = async () => {
       try {
-        const token = localStorage.getItem("authToken");
-        if (!token) {
-          console.error("No authentication token found!");
-          return;
-        }
-
-        const response = await fetch(get_form_initials, {
-          headers: { Authorization: `Token ${token}` },
-        });
-
-        if (!response.ok) {
-          alert("Failed to fetch user details. Please try again later.");
-          throw new Error("Network response was not ok");
-        }
-
-        const fetchedData = await response.json();
+        const fetchedData = await fetchJsonWithAuth(
+          get_form_initials,
+          "Failed to fetch user details.",
+        );
         dispatch(updateForm({ name: "name", value: fetchedData.name || "" }));
         dispatch(
           updateForm({ name: "designation", value: fetchedData.last_selected_role || "" }),
         );
         dispatch(updateForm({ name: "pfNo", value: fetchedData.pfno || "" }));
       } catch (error) {
-        console.error("Failed to fetch user details:", error);
+
+        showNotification({
+          color: "red",
+          title: "Error",
+          message: error?.message || "Failed to fetch user details.",
+        });
       }
     };
     fetchMyDetails();
   }, []);
-  const handleCheck = async (username_reciever) => {
+  const handleCheck = async () => {
     try {
-      const token = localStorage.getItem("authToken");
-      if (!token) {
-        console.error("No authentication token found!");
-        return;
-      }
-
-      const response = await fetch(
-        `${search_employees}?search_text=${formData.username_reciever}`,
-        {
-          headers: { Authorization: `Token ${token}` },
-        },
-      );
-
-      if (!response.ok) {
-        alert("Receiver not found. Please check the username and try again.");
-        throw new Error("Network response was not ok");
-      }
-
-      const fetchedReceiverData = await response.json();
-      const firstMatch = fetchedReceiverData?.employees?.[0];
+      const employees = await searchEmployees(formData.username_reciever);
+      const firstMatch = employees?.[0];
       if (!firstMatch) {
-        alert("Receiver not found. Please check the username and try again.");
+        showNotification({
+          color: "red",
+          title: "Receiver not found",
+          message: "Please check the username and try again.",
+        });
         return;
       }
 
@@ -96,9 +80,18 @@ const CPDA_ADVANCEForm = () => {
         }),
       );
       setVerifiedReceiver(true);
-      alert("Receiver verified successfully!");
+      showNotification({
+        color: "green",
+        title: "Receiver verified",
+        message: "Receiver verified successfully.",
+      });
     } catch (error) {
-      console.error("Failed to fetch receiver data:", error);
+
+      showNotification({
+        color: "red",
+        title: "Verification failed",
+        message: error?.message || "Failed to fetch receiver data.",
+      });
     }
   };
 
@@ -112,7 +105,11 @@ const CPDA_ADVANCEForm = () => {
 
     // Ensure receiver is verified
     if (!verifiedReceiver) {
-      alert("Please verify the receiver's designation before submitting.");
+      showNotification({
+        color: "red",
+        title: "Receiver verification required",
+        message: "Please verify the receiver's designation before submitting.",
+      });
       return;
     }
 
@@ -128,7 +125,11 @@ const CPDA_ADVANCEForm = () => {
 
     for (let field of requiredFields) {
       if (!formData[field.name] || formData[field.name] === "") {
-        alert(`${field.label} is required.`);
+        showNotification({
+          color: "red",
+          title: "Missing required field",
+          message: `${field.label} is required.`,
+        });
         return;
       }
     }
@@ -155,38 +156,29 @@ const CPDA_ADVANCEForm = () => {
         : null,
     };
 
-    console.log(processedData);
+
 
     // Submit form data
     const submitForm = async () => {
       try {
-        const token = localStorage.getItem("authToken");
-        if (!token) {
-          console.error("No authentication token found!");
-          return;
-        }
-
-        const response = await fetch(
+        await submitJsonWithAuth(
           `${submit_cpda_adv_form}?username_reciever=${encodeURIComponent(formData.username_reciever || "")}`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Token ${token}`,
-            },
-            body: JSON.stringify(processedData),
-          },
+          processedData,
+          "Failed to submit CPDA advance form.",
         );
-
-        if (!response.ok) {
-          alert("Failed to submit form. Please try again later.");
-          throw new Error("Network response was not ok");
-        }
-
-        alert("CPDA Advance form submitted successfully!");
+        showNotification({
+          color: "green",
+          title: "Success",
+          message: "CPDA Advance form submitted successfully.",
+        });
         dispatch(resetForm());
       } catch (error) {
-        console.error("Failed to submit CPDA Advance form:", error);
+
+        showNotification({
+          color: "red",
+          title: "Submission failed",
+          message: error?.message || "Failed to submit CPDA Advance form.",
+        });
       }
     };
     submitForm();

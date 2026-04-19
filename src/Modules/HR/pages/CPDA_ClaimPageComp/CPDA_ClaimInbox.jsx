@@ -10,7 +10,6 @@ function CPDA_ClaimInbox() {
 
   useEffect(() => {
     const fetchCPDAClaimInbox = async () => {
-      console.log("Fetching CPDA Claim inbox...");
       try {
         const data = await fetchHrCollection(
           get_cpda_claim_inbox,
@@ -19,7 +18,6 @@ function CPDA_ClaimInbox() {
         setInboxData(data); // Set fetched data
         setLoading(false); // Set loading to false once data is fetched
       } catch (error) {
-        console.error("Failed to fetch CPDA Claim inbox:", error);
         setLoading(false); // Set loading to false if there’s an error
       }
     };

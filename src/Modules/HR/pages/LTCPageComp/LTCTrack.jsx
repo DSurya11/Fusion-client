@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
-import InboxTable from "../../components/tables/InboxTable";
+import { useParams } from "react-router-dom";
+import TrackTable from "../../components/tables/TrackTable";
 import { get_form_track, get_ltc_inbox } from "../../../../routes/hr/index"; // Ensure this is the correct import path
 import LoadingComponent from "../../components/Loading"; // Ensure this is the correct import path
 
 function LTCTrack() {
+  const { id } = useParams();
   const [trackData, setTrackData] = useState([]); // Correct useState syntax
   const [loading, setLoading] = useState(true); // Add loading state
 
@@ -18,10 +20,8 @@ function LTCTrack() {
 
   useEffect(() => {
     const fetchLTCTrack = async () => {
-      console.log("Fetching LTC Track...");
       const token = localStorage.getItem("authToken");
       if (!token) {
-        console.error("No authentication token found!");
         setLoading(false);
         return;
       }
@@ -32,9 +32,7 @@ function LTCTrack() {
         const data = await response.json();
         setTrackData(data.file_history); // Set fetched data
         setLoading(false); // Set loading to false once data is fetched
-        console.log(data);
       } catch (error) {
-        console.error("Failed to fetch LTC Track:", error);
         setLoading(false); // Set loading to false if there’s an error
       }
     };

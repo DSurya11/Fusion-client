@@ -4,6 +4,7 @@ import "@mantine/notifications/styles.css";
 import { Route, Routes, Navigate, useLocation } from "react-router-dom";
 import { Notifications } from "@mantine/notifications";
 import { Layout } from "./components/layout";
+import ErrorBoundary from "./components/ErrorBoundary";
 import Dashboard from "./Modules/Dashboard/dashboardNotifications";
 import Profile from "./Modules/Dashboard/StudentProfile/profilePage";
 import LoginPage from "./pages/login";
@@ -17,6 +18,7 @@ import Database from "./Modules/Database/database";
 import ProgrammeCurriculumRoutes from "./Modules/Program_curriculum/programmCurriculum";
 import HR from "./Modules/HR";
 import NotFoundPage from "./components/NotFoundPage";
+import ModuleProtectedRoute from "./components/ModuleProtectedRoute";
 
 const theme = createTheme({
   breakpoints: {
@@ -32,29 +34,30 @@ const theme = createTheme({
 export default function App() {
   const location = useLocation();
   return (
-    <MantineProvider theme={theme}>
-      <Notifications position="top-center" autoClose={2000} limit={1} />
-      {location.pathname !== "/accounts/login" && <ValidateAuth />}
-      {location.pathname !== "/accounts/login" && <InactivityHandler />}
+    <ErrorBoundary>
+      <MantineProvider theme={theme}>
+        <Notifications position="top-center" autoClose={2000} limit={1} />
+        {location.pathname !== "/accounts/login" && <ValidateAuth />}
+        {location.pathname !== "/accounts/login" && <InactivityHandler />}
 
-      <Routes>
-        <Route path="/" element={<Navigate to="/accounts/login" replace />} />
-        <Route
-          path="/dashboard"
-          element={
-            <Layout>
-              <Dashboard />
-            </Layout>
-          }
-        />
-        <Route
-          path="/academics"
-          element={
-            <Layout>
-              <AcademicPage />
-            </Layout>
-          }
-        />
+        <Routes>
+          <Route path="/" element={<Navigate to="/accounts/login" replace />} />
+          <Route
+            path="/dashboard"
+            element={
+              <Layout>
+                <Dashboard />
+              </Layout>
+            }
+          />
+          <Route
+            path="/academics"
+            element={
+              <Layout>
+                <AcademicPage />
+              </Layout>
+            }
+          />
         <Route
           path="/profile"
           element={
@@ -86,13 +89,16 @@ export default function App() {
         <Route
           path="/hr/*"
           element={
-            <Layout>
-              <HR />
-            </Layout>
+            <ModuleProtectedRoute moduleKey="hr">
+              <Layout>
+                <HR />
+              </Layout>
+            </ModuleProtectedRoute>
           }
         />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </MantineProvider>
+    </ErrorBoundary>
   );
 }

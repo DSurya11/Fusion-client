@@ -20,13 +20,11 @@ function AppraisalTrack() {
 
   useEffect(() => {
     const fetchAppraisalTrack = async () => {
-      console.log("Fetching Appraisal Track...");
       try {
         const data = await fetchHrTrackHistory(id);
         setTrackData(data); // Set fetched data
         setLoading(false); // Set loading to false once data is fetched
       } catch (error) {
-        console.error("Failed to fetch Appraisal Track:", error);
         setLoading(false); // Set loading to false if there’s an error
       }
     };

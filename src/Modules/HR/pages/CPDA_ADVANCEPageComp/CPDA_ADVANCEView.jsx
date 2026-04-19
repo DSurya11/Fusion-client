@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { Title } from "@mantine/core";
 import LoadingComponent from "../../components/Loading";
 import { EmptyTable } from "../../components/tables/EmptyTable";
 import HrBreadcrumbs from "../../components/HrBreadcrumbs";
@@ -30,7 +31,6 @@ const CpdaAdvForm = () => {
     const fetchfetchedformData = async () => {
       const token = localStorage.getItem("authToken");
       if (!token) {
-        console.error("No authentication token found!");
         setLoading(false);
         return;
       }
@@ -48,7 +48,6 @@ const CpdaAdvForm = () => {
         setfetchedformData(data);
         setLoading(false);
       } catch (error) {
-        console.error("Failed to fetch form data:", error);
         setLoading(false);
       }
     };

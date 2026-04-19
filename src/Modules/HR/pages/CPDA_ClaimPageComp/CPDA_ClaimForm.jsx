@@ -1,6 +1,7 @@
 // src/Modules/HR/components/CPDA_ClaimForm.js
 import React from "react";
 import { Button } from "@mantine/core";
+import { showNotification } from "@mantine/notifications";
 import {
   PaperPlaneRight,
   CheckCircle,
@@ -31,17 +32,19 @@ function CPDA_ClaimForm() {
     event.preventDefault();
 
     try {
-      const response = await submitCpdaClaimForm(formData);
-
-      if (response.ok) {
-        const result = await response.json();
-        console.log("Form submitted successfully:", result);
-        dispatch(resetForm());
-      } else {
-        console.error("Error submitting form:", response.statusText);
-      }
+      const result = await submitCpdaClaimForm(formData);
+      showNotification({
+        color: "green",
+        title: "Success",
+        message: "CPDA claim form submitted successfully.",
+      });
+      dispatch(resetForm());
     } catch (error) {
-      console.error("Error submitting form:", error);
+      showNotification({
+        color: "red",
+        title: "Submission failed",
+        message: error?.message || "Failed to submit CPDA claim form.",
+      });
     }
   };
 

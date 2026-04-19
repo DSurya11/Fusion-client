@@ -10,7 +10,6 @@ function CPDA_ClaimRequests() {
 
   useEffect(() => {
     const fetchCPDAClaimRequests = async () => {
-      console.log("Fetching CPDA Claim requests...");
       try {
         const data = await fetchHrCollection(
           get_cpda_claim_requests,
@@ -19,7 +18,6 @@ function CPDA_ClaimRequests() {
         setRequestData(data); // Set fetched data
         setLoading(false); // Set loading to false once data is fetched
       } catch (error) {
-        console.error("Failed to fetch CPDA Claim requests:", error);
         setLoading(false); // Set loading to false if there’s an error
       }
     };

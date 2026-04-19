@@ -9,10 +9,8 @@ function LeaveArchive() {
 
   useEffect(() => {
     const fetchLeaveArchive = async () => {
-      console.log("Fetching leave archive...");
       const token = localStorage.getItem("authToken");
       if (!token) {
-        console.error("No authentication token found!");
         setLoading(false); // Set loading to false if no token
         return;
       }
@@ -23,9 +21,7 @@ function LeaveArchive() {
         const data = await response.json();
         setArchiveData(data.leave_archive); // Set fetched data
         setLoading(false); // Set loading to false once data is fetched
-        console.log(data);
       } catch (error) {
-        console.error("Failed to fetch leave archive:", error);
         setLoading(false); // Set loading to false if there’s an error
       }
     };

@@ -10,7 +10,6 @@ function Cpda_ADVANCEArchive() {
 
   useEffect(() => {
     const fetchCPDAArchive = async () => {
-      console.log("Fetching CPDA Advance archive...");
       try {
         const data = await fetchHrCollection(
           get_cpda_adv_archive,
@@ -19,7 +18,6 @@ function Cpda_ADVANCEArchive() {
         setArchiveData(data); // Set fetched data
         setLoading(false); // Set loading to false once data is fetched
       } catch (error) {
-        console.error("Failed to fetch CPDA Advance archive:", error);
         setLoading(false); // Set loading to false if there’s an error
       }
     };

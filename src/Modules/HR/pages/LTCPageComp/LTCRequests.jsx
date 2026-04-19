@@ -9,10 +9,8 @@ function LTCRequests() {
 
   useEffect(() => {
     const fetchLTCRequests = async () => {
-      console.log("Fetching LTC requests...");
       const token = localStorage.getItem("authToken");
       if (!token) {
-        console.error("No authentication token found!");
         setLoading(false);
         return;
       }
@@ -23,9 +21,7 @@ function LTCRequests() {
         const data = await response.json();
         setRequestData(data.ltc_requests); // Set fetched data
         setLoading(false); // Set loading to false once data is fetched
-        console.log(data);
       } catch (error) {
-        console.error("Failed to fetch LTC requests:", error);
         setLoading(false); // Set loading to false if there’s an error
       }
     };

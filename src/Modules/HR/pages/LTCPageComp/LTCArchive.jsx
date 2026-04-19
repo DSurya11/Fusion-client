@@ -9,10 +9,8 @@ function LTCArchive() {
 
   useEffect(() => {
     const fetchLTCArchive = async () => {
-      console.log("Fetching LTC archive...");
       const token = localStorage.getItem("authToken");
       if (!token) {
-        console.error("No authentication token found!");
         setLoading(false); // Set loading to false if no token
         return;
       }
@@ -23,9 +21,7 @@ function LTCArchive() {
         const data = await response.json();
         setArchiveData(data.ltc_archive); // Set fetched data
         setLoading(false); // Set loading to false once data is fetched
-        console.log(data);
       } catch (error) {
-        console.error("Failed to fetch LTC archive:", error);
         setLoading(false); // Set loading to false if there’s an error
       }
     };

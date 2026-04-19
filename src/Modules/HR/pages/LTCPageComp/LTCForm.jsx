@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Button, Select } from "@mantine/core";
+import { showNotification } from "@mantine/notifications";
 import {
   User,
   Tag,
@@ -24,6 +25,7 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { updateForm, resetForm } from "../../../../redux/formSlice";
 import { submit_ltc_form } from "../../../../routes/hr";
+import { submitJsonWithAuth } from "../../services/hrService";
 import "./LtcForm.css";
 
 const LtcForm = () => {
@@ -76,12 +78,6 @@ const LtcForm = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    const token = localStorage.getItem("authToken");
-    if (!token) {
-      alert("Authentication token is missing.");
-      return;
-    }
-
     const payload = {
       employeeId: Number(formData.employeeId || 0) || null,
       name: formData.name || "",
@@ -116,26 +112,23 @@ const LtcForm = () => {
     };
 
     try {
-      const response = await fetch(submit_ltc_form, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Token ${token}`,
-        },
-        body: JSON.stringify(payload),
+      await submitJsonWithAuth(
+        submit_ltc_form,
+        payload,
+        "Failed to submit LTC form.",
+      );
+      showNotification({
+        color: "green",
+        title: "Success",
+        message: "LTC form submitted successfully.",
       });
-
-      const result = await response.json();
-      if (!response.ok) {
-        alert(result.error || result.message || "Failed to submit LTC form.");
-        return;
-      }
-
-      alert("LTC form submitted successfully!");
       dispatch(resetForm());
     } catch (error) {
-      console.error("Failed to submit LTC form:", error);
-      alert("Failed to submit LTC form. Please try again.");
+      showNotification({
+        color: "red",
+        title: "Submission failed",
+        message: error?.message || "Failed to submit LTC form. Please try again.",
+      });
     }
   };
 

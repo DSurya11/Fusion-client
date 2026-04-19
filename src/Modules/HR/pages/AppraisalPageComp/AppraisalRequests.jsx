@@ -10,7 +10,6 @@ function AppraisalRequests() {
 
   useEffect(() => {
     const fetchAppraisalRequests = async () => {
-      console.log("Fetching Appraisal requests...");
       try {
         const data = await fetchHrCollection(
           get_appraisal_requests,
@@ -19,7 +18,6 @@ function AppraisalRequests() {
         setRequestData(data); // Set fetched data
         setLoading(false); // Set loading to false once data is fetched
       } catch (error) {
-        console.error("Failed to fetch Appraisal requests:", error);
         setLoading(false); // Set loading to false if there’s an error
       }
     };

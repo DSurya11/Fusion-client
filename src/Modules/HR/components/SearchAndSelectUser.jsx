@@ -15,30 +15,18 @@ function SearchAndSelectUser({ onUserSelect }) {
       return;
     }
 
-    const token = localStorage.getItem("authToken");
-    if (!token) {
-      setError("Authentication token is missing.");
-      return;
-    }
-
     setLoading(true);
     setError(null);
 
     try {
-      const response = await searchEmployees(searchText);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch users: ${response.statusText}`);
-      }
-      const data = await response.json();
+      const employees = await searchEmployees(searchText);
 
       // Use id, username, and designation to create a unique identifier
-      const formattedResults = data.employees.map((employee) => ({
+      const formattedResults = employees.map((employee) => ({
         value: `${employee.id}-${employee.username}-${employee.designation}`, // Unique identifier
         label: `${employee.username} (${employee.designation})`,
         details: employee,
       }));
-
-      console.log(formattedResults);
       setSearchResults(formattedResults);
     } catch (err) {
       setError("Unable to fetch users.");

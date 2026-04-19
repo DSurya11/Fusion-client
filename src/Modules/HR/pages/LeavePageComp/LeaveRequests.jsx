@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Title, Select, TextInput } from "@mantine/core";
+import { Title, Select, TextInput, Text, Pagination } from "@mantine/core";
 import { useNavigate } from "react-router-dom";
 import { Eye } from "@phosphor-icons/react";
 import LoadingComponent from "../../components/Loading";
 import { EmptyTable } from "../../components/tables/EmptyTable";
 import { get_leave_requests } from "../../../../routes/hr/index";
-import "./LeaveRequests.css";
+import { useAPIErrorHandling, usePagination } from "../../../../hooks/useCustom";
+import "../../components/tables/Table.css";
 
 function LeaveRequests() {
   const [requestData, setRequestData] = useState([]); // State for leave requests
@@ -13,15 +14,16 @@ function LeaveRequests() {
   const [loading, setLoading] = useState(true); // Loading state
   const [selectedStatus, setSelectedStatus] = useState("All"); // State for status filter
   const [selectedDate, setSelectedDate] = useState(""); // State for date filter (as string)
+  const { error, handleError, clearError } = useAPIErrorHandling();
+  const pagination = usePagination(20);
   const navigate = useNavigate();
 
   // Fetch leave requests from the backend
   useEffect(() => {
     const fetchLeaveRequests = async () => {
-      console.log("Fetching leave requests...");
+
       const token = localStorage.getItem("authToken");
       if (!token) {
-        console.error("No authentication token found!");
         return;
       }
       try {
@@ -29,30 +31,46 @@ function LeaveRequests() {
         if (selectedDate) {
           queryParams.append("date", selectedDate);
         }
+        queryParams.append("page", String(pagination.currentPage));
+        queryParams.append("page_size", String(pagination.pageSize));
+        queryParams.append("limit", String(pagination.pageSize));
+        queryParams.append("offset", String((pagination.currentPage - 1) * pagination.pageSize));
+
+        clearError();
         const response = await fetch(
           `${get_leave_requests}?${queryParams.toString()}`,
           {
             headers: { Authorization: `Token ${token}` },
           },
         );
+        if (!response.ok) {
+          const errPayload = await response.json().catch(() => ({}));
+          throw { response: { status: response.status, data: errPayload } };
+        }
         const data = await response.json();
 
         // Sort the data by submissionDate in descending order (latest first)
-        const sortedData = data.leave_requests.sort((a, b) => {
+        const leaveRequests = data.data?.leave_requests || data.leave_requests || [];
+        const sortedData = leaveRequests.sort((a, b) => {
           return new Date(b.submissionDate) - new Date(a.submissionDate);
         });
+
+        const meta = data.data?.meta || data.meta || {};
+        if (typeof meta.total_count === "number") {
+          pagination.updateTotalCount(meta.total_count);
+        }
 
         setRequestData(sortedData); // Set fetched and sorted data
         setFilteredData(sortedData); // Initialize filtered data
         setLoading(false); // Set loading to false once data is fetched
-        console.log(data);
+
       } catch (error) {
-        console.error("Failed to fetch leave requests:", error);
+        handleError(error);
         setLoading(false); // Set loading to false if there’s an error
       }
     };
     fetchLeaveRequests(); // Call the function to fetch data
-  }, [selectedDate]); // Re-fetch data when selectedDate changes
+  }, [selectedDate, pagination.currentPage, pagination.pageSize]); // Re-fetch data when filters/pagination change
 
   // Handle "View" button click
   const handleViewClick = (view) => {
@@ -108,22 +126,21 @@ function LeaveRequests() {
     <div className="app-container">
       <Title
         order={2}
-        style={{ fontWeight: "500", marginTop: "40px", marginLeft: "15px" }}
+        className="hr-table-title"
       >
         Leave Requests
       </Title>
 
+      {error && (
+        <Text c="red" style={{ margin: "0 15px 10px 15px" }}>
+          {error.message}
+        </Text>
+      )}
+
       {/* Filter Section */}
-      <div
-        style={{
-          margin: "20px 15px",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center", // Align items vertically in the center
-        }}
-      >
+      <div className="hr-toolbar">
         {/* Left Side: Filters */}
-        <div style={{ display: "flex", gap: "20px" }}>
+        <div className="hr-toolbar-left">
           <TextInput
             label="Filter by Date"
             placeholder="Select or enter a date"
@@ -147,7 +164,7 @@ function LeaveRequests() {
         </div>
 
         {/* Right Side: Showing Results */}
-        <Title order={4} style={{ fontWeight: "400" }}>
+        <Title order={4} className="hr-toolbar-right">
           {selectedDate
             ? `Filtered results as of ${new Date(
                 selectedDate,
@@ -196,10 +213,8 @@ function LeaveRequests() {
                   <td>{item.submissionDate}</td>
                   <td>
                     <span
-                      style={{
-                        color: getStatusColor(item.status),
-                        fontWeight: "bold",
-                      }}
+                      className="hr-status-pill"
+                      style={{ color: getStatusColor(item.status) }}
                     >
                       {item.status}
                     </span>
@@ -216,6 +231,13 @@ function LeaveRequests() {
               ))}
             </tbody>
           </table>
+          <div className="hr-pagination-wrap">
+            <Pagination
+              value={pagination.currentPage}
+              onChange={pagination.handlePageChange}
+              total={Math.max(pagination.totalPages, 1)}
+            />
+          </div>
         </div>
       )}
     </div>

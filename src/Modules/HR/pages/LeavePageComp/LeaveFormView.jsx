@@ -55,7 +55,6 @@ const LeaveFormView = () => {
     const fetchFormData = async () => {
       const token = localStorage.getItem("authToken");
       if (!token) {
-        console.error("No authentication token found!");
         setLoading(false);
         return;
       }
@@ -84,7 +83,6 @@ const LeaveFormView = () => {
         setFetchedFormData(adjustedData);
         setLoading(false);
       } catch (error) {
-        console.error("Failed to fetch form data:", error);
         setLoading(false);
       }
     };
@@ -95,7 +93,6 @@ const LeaveFormView = () => {
   const handleDownloadPdf = async () => {
     const token = localStorage.getItem("authToken");
     if (!token) {
-      console.error("No authentication token found!");
       return;
     }
 
@@ -115,7 +112,6 @@ const LeaveFormView = () => {
       a.download = fetchedformData.attachedPdfName;
       a.click();
     } catch (error) {
-      console.error("Failed to download PDF:", error);
     }
   };
 

@@ -10,7 +10,6 @@ function Cpda_ADVANCERequests() {
 
   useEffect(() => {
     const fetchCPDARequests = async () => {
-      console.log("Fetching CPDA Advance requests...");
       try {
         const data = await fetchHrCollection(
           get_cpda_adv_requests,
@@ -19,7 +18,6 @@ function Cpda_ADVANCERequests() {
         setRequestData(data); // Set fetched data
         setLoading(false); // Set loading to false once data is fetched
       } catch (error) {
-        console.error("Failed to fetch CPDA Advance requests:", error);
         setLoading(false); // Set loading to false if there’s an error
       }
     };

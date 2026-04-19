@@ -19,7 +19,7 @@ const RequestsTable = ({ title, data }) => {
     <div className="app-container">
       <Title
         order={2}
-        style={{ fontWeight: "500", marginTop: "40px", marginLeft: "15px" }}
+        className="hr-table-title"
       >
         {title}
       </Title>
