@@ -55,6 +55,15 @@ const CPDA_ADVANCEForm = () => {
     fetchMyDetails();
   }, []);
   const handleCheck = async () => {
+    if (!formData.username_reciever || formData.username_reciever.trim() === "") {
+      showNotification({
+        color: "red",
+        title: "Receiver required",
+        message: "Please enter a receiver's username to check.",
+      });
+      return;
+    }
+
     try {
       const employees = await searchEmployees(formData.username_reciever);
       const firstMatch = employees?.[0];
@@ -237,7 +246,7 @@ const CPDA_ADVANCEForm = () => {
                 id="amountRequired"
                 name="amountRequired"
                 placeholder="Amount Required"
-                value={formData.amountRequired}
+                value={formData.amountRequired || ""}
                 onChange={handleChange}
                 className="input"
                 required
@@ -255,7 +264,7 @@ const CPDA_ADVANCEForm = () => {
                 type="date"
                 id="submissionDate"
                 name="submissionDate"
-                value={formData.submissionDate}
+                value={formData.submissionDate || ""}
                 onChange={handleChange}
                 className="input"
                 required
@@ -277,7 +286,7 @@ const CPDA_ADVANCEForm = () => {
                 id="purpose"
                 name="purpose"
                 placeholder="Purpose"
-                value={formData.purpose}
+                value={formData.purpose || ""}
                 onChange={handleChange}
                 className="input"
                 required
@@ -296,7 +305,7 @@ const CPDA_ADVANCEForm = () => {
                 id="pfNo"
                 name="pfNo"
                 placeholder="XXXXXXXXXXXX"
-                value={formData.pfNo}
+                value={formData.pfNo || ""}
                 onChange={handleChange}
                 className="input"
               />
@@ -313,7 +322,7 @@ const CPDA_ADVANCEForm = () => {
                 id="advanceDueAdjustment"
                 name="advanceDueAdjustment"
                 placeholder="Advance Due"
-                value={formData.advanceDueAdjustment}
+                value={formData.advanceDueAdjustment || ""}
                 onChange={handleChange}
                 className="input"
               />
@@ -337,7 +346,7 @@ const CPDA_ADVANCEForm = () => {
                 type="number"
                 id="balanceAvailable"
                 name="balanceAvailable"
-                value={formData.balanceAvailable}
+                value={formData.balanceAvailable || ""}
                 onChange={handleChange}
                 className="input"
               />
@@ -354,7 +363,7 @@ const CPDA_ADVANCEForm = () => {
                 id="advanceAmountPDA"
                 name="advanceAmountPDA"
                 placeholder="Enter amount"
-                value={formData.advanceAmountPDA}
+                value={formData.advanceAmountPDA || ""}
                 onChange={handleChange}
                 className="input"
               />
@@ -379,7 +388,7 @@ const CPDA_ADVANCEForm = () => {
                 id="amountCheckedInPDA"
                 name="amountCheckedInPDA"
                 placeholder="PDA Register Entry"
-                value={formData.amountCheckedInPDA}
+                value={formData.amountCheckedInPDA || ""}
                 onChange={handleChange}
                 className="input"
                 style={{ maxWidth: "50%" }}
@@ -396,7 +405,7 @@ const CPDA_ADVANCEForm = () => {
               type="text"
               name="username_reciever"
               placeholder="Receiver's Username"
-              value={formData.username_reciever}
+              value={formData.username_reciever || ""}
               onChange={handleChange}
               className="username-input"
               required
@@ -408,23 +417,23 @@ const CPDA_ADVANCEForm = () => {
               type="text"
               name="designation_reciever"
               placeholder="Designation"
-              value={formData.designation_reciever}
+              value={formData.designation_reciever || ""}
               className="designation-input"
               required
               disabled
             />
           </div>
           <Button
-            leftIcon={<CheckCircle size={25} />}
+            leftSection={<CheckCircle size={25} />}
             style={{ marginLeft: "50px", paddingRight: "15px" }}
             className="button"
             onClick={handleCheck}
           >
-            <CheckCircle size={18} /> &nbsp; Check
+            Check
           </Button>
           <Button
             type="submit"
-            rightIcon={<PaperPlaneRight size={20} />}
+            rightSection={<PaperPlaneRight size={20} />}
             style={{
               marginLeft: "350px",
               width: "150px",
@@ -434,7 +443,7 @@ const CPDA_ADVANCEForm = () => {
             className="button"
             disabled={!verifiedReceiver}
           >
-            <PaperPlaneRight size={20} /> &nbsp; Submit
+            Submit
           </Button>
         </div>
       </form>

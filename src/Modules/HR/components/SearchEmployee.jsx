@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Select } from "@mantine/core";
+import { Select, Loader } from "@mantine/core";
 import PropTypes from "prop-types";
 import { searchEmployees } from "../services/hrService";
 
@@ -8,12 +8,15 @@ function SearchEmployee({ onEmployeeSelect, initialSearch, onSearchError }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  const [searchValue, setSearchValue] = useState("");
+  const [value, setValue] = useState(null);
+  const [selectedItem, setSelectedItem] = useState(null);
+
   const hasAutoSearched = useRef(false);
 
   const fetchEmployees = async (text) => {
     if (text.length < 3) {
-      setSearchResults([]);
-      return;
+      return [];
     }
 
     setLoading(true);
@@ -47,13 +50,27 @@ function SearchEmployee({ onEmployeeSelect, initialSearch, onSearchError }) {
     }
   };
 
-  const handleEmployeeSelection = (selectedValue) => {
-    const employee = searchResults.find(
-      (result) => result.value === selectedValue,
-    );
+  const handleSearchChange = (val) => {
+    setSearchValue(val);
+    fetchEmployees(val);
+  };
 
-    if (onEmployeeSelect && employee?.details) {
-      onEmployeeSelect(employee.details);
+  const handleEmployeeSelection = (selectedValue) => {
+    setValue(selectedValue);
+
+    if (!selectedValue) {
+      setSelectedItem(null);
+      return;
+    }
+
+    const employee = searchResults.find((result) => result.value === selectedValue) || selectedItem;
+
+    if (employee) {
+      setSelectedItem(employee);
+      setSearchValue(employee.label);
+      if (onEmployeeSelect && employee.details) {
+        onEmployeeSelect(employee.details);
+      }
     }
   };
 
@@ -61,9 +78,12 @@ function SearchEmployee({ onEmployeeSelect, initialSearch, onSearchError }) {
     const autoSearch = async () => {
       if (initialSearch && !hasAutoSearched.current) {
         hasAutoSearched.current = true;
+        setSearchValue(initialSearch);
         const results = await fetchEmployees(initialSearch);
         if (results.length > 0) {
           const firstEmployee = results[0];
+          setValue(firstEmployee.value);
+          setSelectedItem(firstEmployee);
           onEmployeeSelect?.(firstEmployee.details);
         }
       }
@@ -71,19 +91,26 @@ function SearchEmployee({ onEmployeeSelect, initialSearch, onSearchError }) {
     autoSearch();
   }, [initialSearch, onEmployeeSelect]);
 
+  const data = [...searchResults];
+  if (selectedItem && !data.find((d) => d.value === selectedItem.value)) {
+    data.push(selectedItem);
+  }
+
   return (
     <div style={{ maxWidth: "400px", marginBottom: "20px" }}>
       <Select
         label="Search Employee"
         placeholder="Type to search"
         searchable
-        nothingFound={error || "No employees found"}
-        data={searchResults}
-        onSearchChange={(val) => {
-          fetchEmployees(val);
-        }}
+        searchValue={searchValue}
+        onSearchChange={handleSearchChange}
+        value={value}
         onChange={handleEmployeeSelection}
-        disabled={loading}
+        nothingFoundMessage={error || (searchValue.length < 3 ? "Type at least 3 characters" : "No employees found")}
+        data={data}
+        rightSection={loading ? <Loader size="1rem" /> : null}
+        filter={({ options }) => options}
+        clearable
       />
     </div>
   );

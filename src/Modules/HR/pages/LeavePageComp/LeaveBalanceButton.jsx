@@ -56,7 +56,7 @@ const LeaveBalanceButton = () => {
       >
         <Button
           onClick={() => setOpened(true)}
-          leftIcon={<ListChecks size={20} />}
+          leftSection={<ListChecks size={20} />}
         >
           Show Leave Balance
         </Button>

@@ -10,6 +10,7 @@ import {
   User,
   FilePlus,
   ShieldCheck,
+  ListChecks,
 } from "@phosphor-icons/react";
 import { useSelector } from "react-redux";
 import PerformanceCard from "../components/FormComponent/PerformanceCard";
@@ -49,12 +50,19 @@ const mockdata = [
     link: "/hr/appraisal",
   },
   {
+    title: "Review Leave Requests",
+    description: "Review and approve departmental leave requests.",
+    icon: ListChecks,
+    link: "/hr/admin_leave/review_leave_requests",
+  },
+  {
     title: "Admin Leave Management",
     description: "Manage leave requests across the organization.",
     icon: ShieldCheck,
     link: "/hr/admin_leave",
   },
 ];
+
 
 const exampleItems = [
   { title: "Home", path: "/dashboard" },
@@ -67,12 +75,24 @@ function Hr_Dashboard() {
   const features = useMemo(
     () =>
       mockdata.map((feature) => {
+        const isHRAdmin = ["SectionHead_HR", "hr", "hradmin", "admin"].includes(role);
+        const isHOD = role && role.toLowerCase().includes("hod");
+        const isManager = isHRAdmin || isHOD;
+
         if (
           feature.title === "Admin Leave Management" &&
-          role !== "SectionHead_HR"
+          !isHRAdmin
         ) {
           return null;
         }
+
+        if (
+          feature.title === "Review Leave Requests" &&
+          !isManager
+        ) {
+          return null;
+        }
+
         return (
           <PerformanceCard
             key={feature.title}

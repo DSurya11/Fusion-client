@@ -36,7 +36,7 @@ function PerformanceCard({ IconComponent, title, description, link }) {
         className={classes.button}
         component={Link}
         to={link}
-        rightIcon={<ArrowRight size={16} weight="bold" />}
+        rightSection={<ArrowRight size={16} weight="bold" />}
         style={{ marginTop: "auto" }} // Push button to bottom
       >
         Go to {title} <CaretRight size={20} />

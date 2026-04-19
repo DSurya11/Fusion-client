@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
-import { Select } from "@mantine/core";
+import { Select, Loader } from "@mantine/core";
 import { searchEmployees } from "../services/hrService";
 
 function SearchAndSelectUser({ onUserSelect }) {
@@ -8,10 +8,15 @@ function SearchAndSelectUser({ onUserSelect }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  const [searchValue, setSearchValue] = useState("");
+  const [value, setValue] = useState(null);
+  const [selectedItem, setSelectedItem] = useState(null);
+
   const fetchUsers = async (searchText) => {
     // Trigger search only if at least 4 characters are entered
     if (searchText.length < 3) {
-      setSearchResults([]); // Clear previous results
+      // Do not clear search results if they just selected something
+      // or if they delete text. This prevents Mantine from dropping the selection.
       return;
     }
 
@@ -35,14 +40,37 @@ function SearchAndSelectUser({ onUserSelect }) {
     }
   };
 
-  const handleUserSelection = (selectedValue) => {
-    const user = searchResults.find((result) => result.value === selectedValue);
+  const handleSearchChange = (val) => {
+    setSearchValue(val);
+    fetchUsers(val);
+  };
 
-    // Pass selected user to the parent via the callback
-    if (onUserSelect && user?.details) {
-      onUserSelect(user.details);
+  const handleUserSelection = (selectedValue) => {
+    setValue(selectedValue);
+
+    if (!selectedValue) {
+      setSelectedItem(null);
+      return;
+    }
+
+    // Try to find the user in current search results, fallback to the already selected item
+    const user = searchResults.find((result) => result.value === selectedValue) || selectedItem;
+
+    if (user) {
+      setSelectedItem(user);
+      setSearchValue(user.label);
+      // Pass selected user to the parent via the callback
+      if (onUserSelect && user.details) {
+        onUserSelect(user.details);
+      }
     }
   };
+
+  // Ensure the selected item remains in the data list so Mantine doesn't drop the selection
+  const data = [...searchResults];
+  if (selectedItem && !data.find((d) => d.value === selectedItem.value)) {
+    data.push(selectedItem);
+  }
 
   return (
     <div style={{ maxWidth: "400px", marginBottom: "20px" }}>
@@ -50,11 +78,15 @@ function SearchAndSelectUser({ onUserSelect }) {
         label="Search and Select User"
         placeholder="Type to search"
         searchable
-        nothingFound={error || "No users found"}
-        data={searchResults}
-        onSearchChange={fetchUsers}
+        searchValue={searchValue}
+        onSearchChange={handleSearchChange}
+        value={value}
         onChange={handleUserSelection}
-        disabled={loading}
+        nothingFoundMessage={error || (searchValue.length < 3 ? "Type at least 3 characters" : "No users found")}
+        data={data}
+        rightSection={loading ? <Loader size="1rem" /> : null}
+        filter={({ options }) => options}
+        clearable
       />
     </div>
   );

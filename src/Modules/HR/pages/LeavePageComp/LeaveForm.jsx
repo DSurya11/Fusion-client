@@ -100,17 +100,18 @@ const LeaveForm = () => {
   const handleSubmit = async () => {
     setActiveSubmit(false);
 
-    // Validation Checks
-    if (
-      !formData.leaveStartDate ||
-      !formData.leaveEndDate ||
-      !formData.purpose ||
-      !forwardTo
-    ) {
+    // Validation checks for required core fields.
+    const missingFields = [];
+    if (!formData.leaveStartDate) missingFields.push("Leave start date");
+    if (!formData.leaveEndDate) missingFields.push("Leave end date");
+    if (!formData.purpose?.trim()) missingFields.push("Purpose of leave");
+    if (!forwardTo?.id) missingFields.push("Forward application user");
+
+    if (missingFields.length > 0) {
       showNotification({
         color: "red",
         title: "Missing fields",
-        message: "Required fields: Leave dates, purpose, and forward to.",
+        message: `Please provide: ${missingFields.join(", ")}.`,
       });
       setActiveSubmit(true);
       return;
@@ -167,7 +168,7 @@ const LeaveForm = () => {
     finalFormData.append("date", today);
     finalFormData.append("leaveStartDate", formData.leaveStartDate);
     finalFormData.append("leaveEndDate", formData.leaveEndDate);
-    finalFormData.append("purpose", formData.purpose);
+    finalFormData.append("purpose", formData.purpose.trim());
 
     // Append all leave types
     finalFormData.append("casualLeave", formData.casualLeave);
@@ -231,10 +232,16 @@ const LeaveForm = () => {
       setActiveSubmit(true);
       navigate("/hr/leave/leaverequests");
     } catch (err) {
+      const serverMsg = err?.payload?.error?.message
+        || err?.payload?.error
+        || err?.payload?.message
+        || err?.message
+        || "Form submission failed. Please try again.";
+      console.error("Leave form submission error:", err);
       showNotification({
         color: "red",
         title: "Submission failed",
-        message: err?.message || "Form submission failed. Please try again.",
+        message: typeof serverMsg === "string" ? serverMsg : JSON.stringify(serverMsg),
       });
       setActiveSubmit(true);
     }

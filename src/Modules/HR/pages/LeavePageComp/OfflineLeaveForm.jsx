@@ -116,17 +116,18 @@ function OfflineLeaveForm() {
   const handleSubmit = async () => {
     setActiveSubmit(false);
 
-    // Validation Checks
-    if (
-      !formData.leaveStartDate ||
-      !formData.leaveEndDate ||
-      !formData.purpose ||
-      !forwardTo
-    ) {
+    // Validation checks for required core fields.
+    const missingFields = [];
+    if (!formData.leaveStartDate) missingFields.push("Leave start date");
+    if (!formData.leaveEndDate) missingFields.push("Leave end date");
+    if (!formData.purpose?.trim()) missingFields.push("Purpose of leave");
+    if (!forwardTo?.id) missingFields.push("Forward application user");
+
+    if (missingFields.length > 0) {
       showNotification({
         color: "red",
         title: "Missing fields",
-        message: "Required fields: Leave dates, purpose, and forward to.",
+        message: `Please provide: ${missingFields.join(", ")}.`,
       });
       setActiveSubmit(true);
       return;
@@ -188,7 +189,7 @@ function OfflineLeaveForm() {
       leaveDetails: {
         leaveStartDate: formData.leaveStartDate,
         leaveEndDate: formData.leaveEndDate,
-        purpose: formData.purpose,
+        purpose: formData.purpose.trim(),
         casualLeave: formData.casualLeave,
         vacationLeave: formData.vacationLeave,
         earnedLeave: formData.earnedLeave,

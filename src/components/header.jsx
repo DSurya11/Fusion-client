@@ -66,7 +66,16 @@ function Header({ opened, toggleSidebar }) {
       console.log(response.data.message);
       dispatch(setRole(newRole));
       dispatch(setCurrentAccessibleModules());
-      navigate("/dashboard");
+      
+      const roleRedirects = {
+        "hr": "/hr",
+        "SectionHead_HR": "/hr",
+        "faculty": "/academics",
+        "admin": "/database",
+        "student": "/academics",
+      };
+      const targetRoute = roleRedirects[newRole] || "/dashboard";
+      navigate(targetRoute);
     } catch (error) {
       console.error("Error updating last selected role:", error.response.data);
     }
